@@ -1152,7 +1152,8 @@ class Doc {
     this.p.ops.push('q ' + op.join(' ') + ' Q');
   }
   line(x1, y1, x2, y2, o = {}) {
-    this.p.ops.push(`q ${this.rgb(o.color || [200, 209, 216])} RG ${((o.lw || .3) * this.k).toFixed(2)} w ${this.X(x1)} ${this.Y(y1)} m ${this.X(x2)} ${this.Y(y2)} l S Q`);
+    const dash = o.dash ? `[${o.dash.map(v => (v * this.k).toFixed(2)).join(' ')}] 0 d ` : '';
+    this.p.ops.push(`q ${this.rgb(o.color || [200, 209, 216])} RG ${((o.lw || .3) * this.k).toFixed(2)} w ${dash}${this.X(x1)} ${this.Y(y1)} m ${this.X(x2)} ${this.Y(y2)} l S Q`);
   }
   addJpeg(bytes, w, h) { this.imgs.push({ bytes, w, h }); return this.imgs.length; }
   image(n, x, y, w, h) { this.p.ops.push(`q ${(w * this.k).toFixed(2)} 0 0 ${(h * this.k).toFixed(2)} ${this.X(x)} ${this.Y(y + h)} cm /Im${n} Do Q`); }
@@ -1369,7 +1370,7 @@ function lineChart(el, o) {
   el.innerHTML = s;
   return { sx, sy };
 }
-const keys = (el, arr) => el.innerHTML = arr.map(([c, l, dash]) => `<span><i style="background:${c};${dash ? 'opacity:.8' : ''}"></i>${esc(l)}</span>`).join('');
+const keys = (el, arr) => el.innerHTML = arr.map(([c, l, dash]) => `<span data-c="${c.replace(/^var\((--[\w-]+)\)$/, '$1')}" data-dash="${dash ? 1 : ''}"><i style="background:${dash ? `repeating-linear-gradient(90deg, ${c} 0 4px, transparent 4px 7px)` : c}"></i>${esc(l)}</span>`).join('');
 
 /* ---------- render ---------- */
 let RES = null, pullScale = null;
@@ -1446,7 +1447,7 @@ function render(R) {
     hl.push({ y: tf(R.pe.Tbreak), label: `Batas putus/yield ${nf(tf(R.pe.Tbreak), 1)} t`, cls: 'lim', tc: 'bad' });
   }
   pullScale = lineChart($('chPull'), { xs, xmax: g.L, series: [{ ys, cls: 's1', area: true }], hl, xLabel: 'Panjang pipa yang sudah masuk lubang (m)', yLabel: 'Gaya tarik (ton)', marker: 'mkPull', aria: 'Grafik gaya tarik terhadap panjang tarikan' });
-  keys($('keyPull'), [['var(--accent)', 'Gaya tarik di kepala tarik'], ['var(--bad)', steel ? 'Kapasitas rig' : 'Kapasitas rig / batas putus'], ...(steel ? [] : [['var(--warn)', 'Safe Pull Strength (ASTM F1962)']])]);
+  keys($('keyPull'), [['var(--accent)', 'Gaya tarik di kepala tarik'], ['var(--bad)', steel ? 'Kapasitas rig' : 'Kapasitas rig / batas putus', true], ...(steel ? [] : [['var(--warn)', 'Safe Pull Strength (ASTM F1962)', true]])]);
   $('pullNote').textContent = steel
     ? `Metode PRCI, dihitung bertahap selama pipa masuk. Maksimum ${nf(tf(pl.Tmax), 2)} t saat ${nf(pl.sMax, 0)} m tertarik. Faktor hambatan ${nf(I.kHamb, 1)}×.`
     : `Metode ASTM F1962 (capstan + hidrokinetik ${nf(tf(pl.hk), 2)} t). Maksimum ${nf(tf(pl.Tmax), 2)} t. Faktor hambatan ${nf(I.kHamb, 1)}×.`;
@@ -1511,13 +1512,13 @@ function render(R) {
     $('stressNote').textContent = `PRCI. Fb = ${nf(R.inst.Fb, 0)} MPa, Fhc = ${nf(R.inst.Fhc, 0)} MPa. UC tertinggi biasanya di lengkung sisi rig.`;
     const ip = R.inst.pts;
     lineChart($('chStress'), { xs: ip.map(p => p.s), xmax: g.L, series: [{ ys: ip.map(p => p.uc1), cls: 's1' }, { ys: ip.map(p => p.uc2), cls: 's2' }, { ys: ip.map(p => p.ft / (.9 * P.SMYS)), cls: 's3' }], hl: [{ y: 1, label: 'UC = 1,0', cls: 'lim', tc: 'bad' }], ymax: Math.max(1.15, ...ip.map(p => Math.max(p.uc1, p.uc2)).map(v => v * 1.1)), xLabel: 'Posisi dari titik entry sepanjang lintasan (m)', yLabel: 'Unity check', aria: 'Unity check sepanjang lintasan' });
-    keys($('keyStress'), [['var(--accent)', 'Tarik + bending'], ['var(--steel)', 'Tarik + bending + hoop'], ['var(--ok)', 'Tarik saja']]);
+    keys($('keyStress'), [['var(--accent)', 'Tarik + bending'], ['var(--steel)', 'Tarik + bending + hoop'], ['var(--ok)', 'Tarik saja', true], ['var(--bad)', 'Batas UC = 1,0', true]]);
   } else {
     $('hStress').textContent = 'Tegangan tarik PE sepanjang lintasan';
     $('stressNote').textContent = `Saat pipa masuk penuh. Tegangan tarik izin ${nf(R.pe.sAllow, 2)} MPa (0,4 × σy × fdurasi ${nf(R.pe.fT, 2)} × fsuhu ${nf(R.pe.fTemp, 2)}).`;
     const ps = g.pts.map(p => pl.TatEntryS(p.s) / (P.As * 1e6));
     lineChart($('chStress'), { xs: g.pts.map(p => p.s), xmax: g.L, series: [{ ys: ps, cls: 's1', area: true }], hl: [{ y: R.pe.sAllow, label: `Izin ${nf(R.pe.sAllow, 2)} MPa`, cls: 'lim2', tc: 'warn' }, { y: R.pe.sAllow / .4, label: `Yield ${nf(R.pe.sAllow / .4, 1)} MPa`, cls: 'lim', tc: 'bad' }], xLabel: 'Posisi dari titik entry sepanjang lintasan (m)', yLabel: 'Tegangan tarik (MPa)', aria: 'Tegangan tarik PE' });
-    keys($('keyStress'), [['var(--accent)', 'Tegangan tarik'], ['var(--warn)', 'Tegangan izin'], ['var(--bad)', 'Yield']]);
+    keys($('keyStress'), [['var(--accent)', 'Tegangan tarik'], ['var(--warn)', 'Tegangan izin', true], ['var(--bad)', 'Yield', true]]);
   }
 
   // details
@@ -1591,7 +1592,7 @@ function render(R) {
   const fr = R.frac;
   const fx = fr.pts.map(p => p.s);
   lineChart($('chFrac'), { xs: fx, xmax: g.L, series: [{ ys: fr.pts.map(p => p.pmax), cls: 's2' }, { ys: fr.pts.map(p => p.pmax == null ? null : p.pmax / I.fracSF), cls: 's3' }, { ys: fr.pts.map(p => p.preq), cls: 's1' }], xLabel: 'Posisi bit dari titik entry (m)', yLabel: 'Tekanan (kPa)', aria: 'Tekanan lumpur vs batas hydrofracture', ymax: Math.max(Math.max(...fr.pts.map(p => p.preq)) * 1.5, Math.min(Math.max(...fr.pts.map(p => p.pmax == null ? 0 : p.pmax / I.fracSF)) * 1.1, Math.max(...fr.pts.map(p => p.preq)) * 3)) });
-  keys($('keyFrac'), [['var(--accent)', 'Tekanan lumpur dibutuhkan di bit'], ['var(--steel)', 'Pmax Delft'], ['var(--ok)', `Pmax / FK ${nf(I.fracSF, 1)}`]]);
+  keys($('keyFrac'), [['var(--accent)', 'Tekanan lumpur dibutuhkan di bit'], ['var(--steel)', 'Pmax Delft'], ['var(--ok)', `Pmax / FK ${nf(I.fracSF, 1)} (batas izin)`, true]]);
   $('fracNote').textContent = fr.soil.rock ? `Tanah: ${fr.soil.label}. Metode Delft tidak berlaku; grafik hanya menampilkan tekanan lumpur yang dibutuhkan.` : `Tanah: ${fr.soil.label} (c = ${fr.soil.c} kPa, φ = ${fr.soil.phi}°, G = ${nf(fr.soil.G / 1000, 0)} MPa, γsat = ${nf(fr.soil.gsat, 1)} kN/m³${fr.soil.note ? '; ' + fr.soil.note : ''}). Rasio tertinggi ${nf(fr.worst, 2)} pada ${nf(fr.worstS, 0)} m dari entry.${fr.failAt.length ? ' Ada zona berisiko frac-out.' : ''}`;
 
   // construction
@@ -2318,6 +2319,9 @@ async function buildPdf() {
   draw();
   const profCanvas = snapshotCanvas();
   const svgs = ['chPull', 'chStress', 'chFrac'].map(id => svgInline($(id).querySelector('svg')));
+  const rootCs = getComputedStyle(root);
+  const toRgb = s => { const m = String(s).trim().match(/^#([0-9a-f]{6})$/i); if (m) return [0, 2, 4].map(i => parseInt(m[1].slice(i, i + 2), 16)); const r = String(s).match(/\d+(\.\d+)?/g); return r && r.length >= 3 ? r.slice(0, 3).map(Number) : [20, 32, 43]; };
+  const legends = ['keyPull', 'keyStress', 'keyFrac'].map(id => [...$(id).children].map(sp => ({ label: sp.textContent, dash: !!sp.dataset.dash, color: toRgb(sp.dataset.c && sp.dataset.c.startsWith('--') ? rootCs.getPropertyValue(sp.dataset.c) : sp.dataset.c) })));
   if (prevTheme == null) root.removeAttribute('data-theme'); else root.setAttribute('data-theme', prevTheme);
   readColors(); A.t = saveT; A.playing = saveP;
   const prof = await toJpeg(profCanvas);
@@ -2348,12 +2352,23 @@ async function buildPdf() {
     });
     return out;
   };
-  const heading = (t) => { ensure(48); y += 3; D.text(t, ML, y + 5, { size: 13, bold: true }); D.line(ML, y + 7.5, ML + CW, y + 7.5, { color: INK, lw: .45 }); y += 12; };
-  const sub = (t) => { ensure(10); D.text(t, ML, y + 4, { size: 10, bold: true, color: STEEL }); y += 7; };
+  const heading = (t, need = 48) => { ensure(need); y += 3; D.text(t, ML, y + 5, { size: 13, bold: true }); D.line(ML, y + 7.5, ML + CW, y + 7.5, { color: INK, lw: .45 }); y += 12; };
+  const sub = (t) => { ensure(32); D.text(t, ML, y + 4, { size: 10, bold: true, color: STEEL }); y += 7; };
   const para = (t, o = {}) => {
     const s = o.size || 8.6, L = wrap(t, o.w || CW - (o.indent || 0), s, o.bold);
     L.forEach((ln, i) => { ensure(lh(s)); if (o.bullet && i === 0) D.text('•', ML, y + lh(s) * .78, { size: s, color: o.color || INK }); D.text(ln, ML + (o.indent || 0), y + lh(s) * .78, { size: s, bold: o.bold, color: o.color || INK }); y += lh(s); });
     y += o.after == null ? 2 : o.after;
+  };
+  const legend = items => {
+    const s = 7.6, h = lh(s) + 1.2; let x = ML; ensure(h + 2);
+    items.forEach(it => {
+      const w = 8 + 1.6 + D.tw(it.label, s) + 5;
+      if (x + w > ML + CW && x > ML) { x = ML; y += h; ensure(h + 2); }
+      D.line(x, y + h / 2, x + 8, y + h / 2, { color: it.color, lw: .7, dash: it.dash ? [1.4, 1] : null });
+      D.text(it.label, x + 9.6, y + h / 2 + s * .3528 * .35, { size: s, color: INK });
+      x += w;
+    });
+    y += h + 3;
   };
   const image = (im, maxH = 95) => {
     if (!im) return;
@@ -2469,10 +2484,10 @@ async function buildPdf() {
   para('UC = nilai/batas; UC > 1,00 berarti tidak memenuhi.', { size: 8, color: MUT });
   table(domTable($('tblChecks')), { size: 7.4, cap: 70 });
 
-  heading('4  Pull load selama pullback');
+  heading('4  Pull load selama pullback', 112);
   para($('pullNote').textContent, { size: 8.4 });
   image(imPull, 78);
-  para('Legenda: ' + [...$('keyPull').children].map(s => s.textContent).join(' · '), { size: 7.2, color: MUT });
+  legend(legends[0]);
   table(domTable($('tblPull')), { size: 7.6 });
 
   heading('5  Profil lintasan & properti pipa');
@@ -2481,20 +2496,20 @@ async function buildPdf() {
   sub('Properti pipa');
   table(domTable($('tblPipe')), { size: 7.8 });
 
-  heading('6  ' + $('hStress').textContent);
+  heading('6  ' + $('hStress').textContent, 112);
   para($('stressNote').textContent, { size: 8.4 });
   image(imStress, 78);
-  para('Legenda: ' + [...$('keyStress').children].map(s => s.textContent).join(' · '), { size: 7.2, color: MUT });
+  legend(legends[1]);
 
   heading('7  ' + $('hDetail').textContent);
   table(domTable($('tblDetail')), { size: 7.8 });
   heading('8  ' + $('hNb').textContent);
   table(domTable($('tblNb')), { size: 7.8 });
 
-  heading('9  Hydrofracture (frac-out)');
+  heading('9  Hydrofracture (frac-out)', 112);
   para($('fracNote').textContent, { size: 8.4 });
   image(imFrac, 78);
-  para('Legenda: ' + [...$('keyFrac').children].map(s => s.textContent).join(' · '), { size: 7.2, color: MUT });
+  legend(legends[2]);
 
   heading('10  Pendukung konstruksi');
   table(domTable($('tblCon')), { size: 7.8 });
