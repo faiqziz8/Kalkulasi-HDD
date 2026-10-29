@@ -1,0 +1,2765 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HDD Crossing">
+<meta name="theme-color" content="#14202b">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-size:14px;-webkit-text-size-adjust:100%}img{max-width:100%}[hidden]{display:none!important}</style>
+</head><body>
+<title>Simulator HDD Crossing</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: engineering workbench — input rail on the left, live drilling profile + calculation sheet on the right */
+:root{
+  --bg:#e8ecef; --surface:#f6f8f9; --raised:#ffffff; --ink:#14202b; --muted:#56636f; --line:#c8d1d8; --line2:#dde3e8;
+  --accent:#c4650e; --accent-soft:#f6e4d2; --steel:#2c5f82; --ok:#2d7a4c; --ok-soft:#dcefe3; --warn:#a67206; --warn-soft:#f6ecd0; --bad:#bd3a2b; --bad-soft:#f7dcd8;
+  --sky1:#b3d2e8; --sky2:#e5eff5; --grass:#6c9548; --soil0:#8d6c47; --soil1:#a98b60; --soil2:#977850; --soil3:#7c6245; --dot:rgba(40,25,10,.18);
+  --water1:#4a91bd; --water2:#256793; --asphalt:#3b4046; --hole:#c7a674; --pipeSteel:#2a2f35; --pipePE:#efbf2a; --rig:#d7832a; --scene-ink:#17222c; --scene-label:rgba(255,255,255,.82);
+  --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e141a; --surface:#141c24; --raised:#1a242e; --ink:#e1e8ee; --muted:#93a1ad; --line:#2a3743; --line2:#222e38;
+  --accent:#f0983c; --accent-soft:#3a2816; --steel:#7eb0d3; --ok:#5fc187; --ok-soft:#173025; --warn:#e3b43e; --warn-soft:#352b12; --bad:#f0705d; --bad-soft:#3b1d19;
+  --sky1:#0a1424; --sky2:#1c2b40; --grass:#3d5c2b; --soil0:#4f3c28; --soil1:#5e4932; --soil2:#53402c; --soil3:#433424; --dot:rgba(0,0,0,.28);
+  --water1:#1f557c; --water2:#123a58; --asphalt:#272b30; --hole:#8b7150; --pipeSteel:#c3ccd4; --pipePE:#f2c230; --rig:#e48f30; --scene-ink:#e6edf3; --scene-label:rgba(10,18,28,.78);
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e141a; --surface:#141c24; --raised:#1a242e; --ink:#e1e8ee; --muted:#93a1ad; --line:#2a3743; --line2:#222e38;
+  --accent:#f0983c; --accent-soft:#3a2816; --steel:#7eb0d3; --ok:#5fc187; --ok-soft:#173025; --warn:#e3b43e; --warn-soft:#352b12; --bad:#f0705d; --bad-soft:#3b1d19;
+  --sky1:#0a1424; --sky2:#1c2b40; --grass:#3d5c2b; --soil0:#4f3c28; --soil1:#5e4932; --soil2:#53402c; --soil3:#433424; --dot:rgba(0,0,0,.28);
+  --water1:#1f557c; --water2:#123a58; --asphalt:#272b30; --hole:#8b7150; --pipeSteel:#c3ccd4; --pipePE:#f2c230; --rig:#e48f30; --scene-ink:#e6edf3; --scene-label:rgba(10,18,28,.78);
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.5}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px;max-width:1560px;margin:0 auto}
+h1,h2,h3{font-family:var(--f-display);font-weight:600;letter-spacing:.01em;text-wrap:balance;margin:0}
+h1{font-size:clamp(30px,4vw,44px);line-height:1}
+h2{font-size:24px;line-height:1.1}
+h3{font-size:18px}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+p{margin:0}
+
+.top{display:flex;flex-wrap:wrap;gap:16px 32px;align-items:flex-end;justify-content:space-between;padding-bottom:18px;border-bottom:2px solid var(--ink);margin-bottom:20px}
+.top .proj{font-family:var(--f-display);font-size:20px;font-weight:600;color:var(--steel);margin-top:6px;text-wrap:balance}
+.actions{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.pdfrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.pdfrow .hint{margin:0}
+#btnPdf{padding:9px 16px;font-size:13.5px}
+button:disabled{opacity:.6;cursor:progress}
+@media (max-width:640px){.actions{align-items:stretch}.pdfrow{justify-content:flex-start}}
+.top .lede{color:var(--muted);max-width:68ch;margin-top:8px}
+.verdict{display:flex;gap:10px;align-items:center;font-family:var(--f-display);font-size:20px;font-weight:600;padding:8px 14px;border-radius:var(--r);border:1.5px solid currentColor}
+.verdict.ok{color:var(--ok);background:var(--ok-soft)} .verdict.bad{color:var(--bad);background:var(--bad-soft)}
+.verdict small{font-family:var(--f-body);font-size:12px;font-weight:500;color:var(--muted)}
+
+.layout{display:grid;grid-template-columns:minmax(290px,350px) minmax(0,1fr);grid-template-areas:"inputs viz" "inputs results";gap:20px 24px;align-items:start}
+.viz{grid-area:viz;min-width:0}
+.inputs{grid-area:inputs;position:sticky;top:max(12px,env(safe-area-inset-top,0px));max-height:calc(100vh - 24px);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:4px 14px 14px}
+.results{grid-area:results;min-width:0;display:flex;flex-direction:column;gap:22px}
+@media (max-width:900px){
+  .layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"viz" "inputs" "results"}
+  .inputs{position:static;max-height:none}
+}
+
+/* inputs */
+fieldset{border:0;border-top:1px solid var(--line);margin:0;padding:12px 0 6px;min-width:0}
+fieldset:first-of-type{border-top:0}
+legend{font-family:var(--f-display);font-size:17px;font-weight:600;padding:0;margin-bottom:6px;display:flex;gap:8px;align-items:baseline}
+legend .eyebrow{font-size:10px}
+.f{display:grid;grid-template-columns:minmax(0,1fr) 118px;gap:8px;align-items:center;margin:6px 0}
+.f.u{grid-template-columns:minmax(0,1fr) 168px}
+.uv{display:grid;grid-template-columns:minmax(0,1fr) 74px;gap:4px}
+.uv select{padding-inline:4px}
+.f label{font-size:13px;color:var(--ink);line-height:1.25}
+.f label small{display:block;color:var(--muted);font-size:11px}
+.f.wide{grid-template-columns:1fr}
+input[type=number],input[type=text],input[type=date],select{width:100%;font:500 13px/1.2 var(--f-mono);color:var(--ink);background:var(--raised);border:1px solid var(--line);border-radius:4px;padding:6px 7px;min-width:0}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;border:1px solid var(--line);border-radius:5px;overflow:hidden;margin:4px 0 8px;background:var(--raised)}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label{text-align:center;padding:8px 6px;cursor:pointer;font-weight:600;font-size:13px;color:var(--muted);border-left:1px solid var(--line);display:flex;gap:6px;justify-content:center;align-items:center}
+.seg label:first-of-type{border-left:0}
+.seg input:checked+label{background:var(--ink);color:var(--bg)}
+.seg input:focus-visible+label{outline:2px solid var(--accent);outline-offset:-2px}
+.hint{font-size:11.5px;color:var(--muted);margin:2px 0 6px}
+.range{display:grid;grid-template-columns:1fr 54px;gap:10px;align-items:center}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+button{font:600 12.5px/1 var(--f-body);color:var(--ink);background:var(--raised);border:1px solid var(--line);border-radius:4px;padding:7px 10px;cursor:pointer}
+button:hover{border-color:var(--ink)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* viz */
+.stage{position:relative;border-radius:0 0 var(--r) var(--r);overflow:hidden;border:1px solid var(--line);background:var(--sky2)}
+.stage canvas{display:block;width:100%;height:clamp(300px,46vw,520px)}
+@media (max-width:600px){.stage canvas{height:380px}}
+.hud{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:1px;background:var(--line);border:1px solid var(--line);border-bottom:0;border-radius:var(--r) var(--r) 0 0;overflow:hidden}
+.hud .card{background:var(--surface);padding:9px 12px;min-width:0}
+.hudrow{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;justify-content:space-between}
+@media (max-width:560px){.hud{grid-template-columns:1fr}}
+.hud .phase{font-family:var(--f-display);font-size:18px;font-weight:600;line-height:1.1}
+.hud .sub{font-size:11.5px;color:var(--muted)}
+.meter{height:8px;border-radius:4px;background:var(--line2);position:relative;overflow:hidden;margin-top:5px}
+.meter i{position:absolute;inset:0 auto 0 0;background:var(--ok);border-radius:4px}
+.meter b{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--ink)}
+.hud .big{font-family:var(--f-mono);font-size:20px;font-weight:500}
+.alert{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--bad);color:#fff;padding:12px 18px;border-radius:6px;font-family:var(--f-display);font-size:24px;font-weight:700;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.35);pointer-events:none;max-width:86%}
+@media (max-width:560px){.alert{font-size:18px;padding:10px 12px}.alert small{font-size:12px}}
+.alert small{display:block;font-family:var(--f-body);font-size:13px;font-weight:500;opacity:.92}
+.scale{position:absolute;right:10px;bottom:8px;font:500 11px var(--f-mono);color:var(--scene-ink);background:var(--scene-label);padding:3px 6px;border-radius:3px}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.controls .sep{flex:1}
+.controls button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.timeline{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:8px}
+.timeline div{height:5px;border-radius:3px;background:var(--line2);overflow:hidden}
+.timeline div i{display:block;height:100%;width:0;background:var(--accent)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--muted);margin-top:8px}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.legend i{width:16px;height:4px;border-radius:2px;display:inline-block}
+
+/* results */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.cards div{background:var(--surface);padding:12px 14px}
+.cards dt{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.cards dd{margin:3px 0 0;font:500 22px/1.15 var(--f-mono);font-variant-numeric:tabular-nums}
+.cards dd small{font-size:12px;color:var(--muted);font-family:var(--f-body)}
+.sec{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;min-width:0}
+.sec-h{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:baseline;margin-bottom:10px}
+.sec-h p{color:var(--muted);font-size:12.5px;max-width:70ch}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:22px}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;text-align:left;padding:6px 8px;border-bottom:1.5px solid var(--ink);white-space:nowrap}
+td{padding:6px 8px;border-bottom:1px solid var(--line2);vertical-align:top}
+td.n,th.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.grp td{font-family:var(--f-display);font-size:15px;font-weight:600;padding-top:12px;border-bottom:1px solid var(--line);color:var(--steel)}
+.pill{display:inline-block;font:600 11px/1 var(--f-body);padding:4px 7px;border-radius:20px;white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.bad{background:var(--bad-soft);color:var(--bad)} .pill.warn{background:var(--warn-soft);color:var(--warn)}
+.ref{font-size:11.5px;color:var(--muted)}
+.ucbar{display:inline-block;width:46px;height:5px;background:var(--line2);border-radius:3px;vertical-align:middle;margin-right:6px;position:relative;overflow:hidden}
+.ucbar i{position:absolute;inset:0 auto 0 0;border-radius:3px}
+.msgs{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.msgs li{padding:8px 10px;border-radius:5px;font-size:13px;border-left:3px solid}
+.msgs li.w{background:var(--warn-soft);border-color:var(--warn)} .msgs li.i{background:var(--raised);border-color:var(--steel)}
+.chart svg{width:100%;height:auto;display:block}
+.chart .ax{stroke:var(--line);stroke-width:1} .chart .gr{stroke:var(--line2);stroke-width:1}
+.chart text{fill:var(--muted);font:11px var(--f-mono)}
+.chart .s1{stroke:var(--accent);fill:none;stroke-width:2.2} .chart .s2{stroke:var(--steel);fill:none;stroke-width:2}
+.chart .s3{stroke:var(--ok);fill:none;stroke-width:1.6;stroke-dasharray:5 4}
+.chart .lim{stroke:var(--bad);stroke-width:1.4;stroke-dasharray:6 4;fill:none} .chart .lim2{stroke:var(--warn);stroke-width:1.4;stroke-dasharray:3 3;fill:none}
+.chart .area{fill:var(--accent);opacity:.12}
+.chart .mk{fill:var(--accent);stroke:var(--raised);stroke-width:2}
+.chart .lbl{fill:var(--ink);font-weight:500}
+.chart .lbl.bad{fill:var(--bad)} .chart .lbl.warn{fill:var(--warn)}
+.keys{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);margin-top:6px}
+.keys span{display:inline-flex;align-items:center;gap:6px}
+.keys i{display:inline-block;width:14px;height:3px;border-radius:2px}
+.scrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;margin:4px 0}
+.scbox summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--muted);padding:4px 0}
+.sclist{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column;gap:3px;max-height:190px;overflow:auto}
+.sc-item{display:grid;grid-template-columns:8px minmax(0,1fr) auto auto;gap:6px;align-items:center;background:var(--raised);border:1px solid var(--line2);border-radius:4px;padding:4px 5px 4px 7px}
+.sc-item.on{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.sc-item .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.sc-item .dot.ok{background:var(--ok)} .sc-item .dot.bad{background:var(--bad)}
+.sc-main{display:flex;flex-direction:column;min-width:0;line-height:1.25}
+.sc-main b{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sc-main span{font-size:10.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sc-item button{padding:3px 7px;font-size:11.5px}
+.sc-item .sc-del{padding:3px 6px;color:var(--muted)}
+.sc-item .sc-del.danger{color:#fff}
+button.danger{background:var(--bad);border-color:var(--bad);color:#fff}
+.sc-empty{font-size:12px;color:var(--muted);padding:6px 0}
+.rigbox{display:grid;grid-template-columns:minmax(180px,240px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:640px){.rigbox{grid-template-columns:1fr}}
+.rigbig{background:var(--raised);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:5px;padding:14px 16px}
+.rigbig .num{font-size:40px;line-height:1.05;font-weight:500;margin:6px 0 2px}
+.rigbig .num small{font-size:16px;color:var(--muted)}
+.std{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:10px 22px}
+.std div{padding:10px 0;border-top:1px solid var(--line2)}
+.std b{font-family:var(--f-display);font-size:16px;font-weight:600;display:block}
+.std span{font-size:12.5px;color:var(--muted)}
+ul.plain{margin:0;padding-left:18px;color:var(--ink)} ul.plain li{margin:3px 0}
+.foot{color:var(--muted);font-size:12px;margin-top:6px}
+@media print{
+  #fsScen,.controls,.timeline,.pdfrow,.chips,#btnCopy{display:none!important}
+  .layout{display:block}.inputs{position:static;max-height:none;overflow:visible}
+}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
+</style>
+
+<div class="wrap">
+<header class="top">
+  <div>
+    <div class="eyebrow">Horizontal Directional Drilling · Kalkulasi &amp; Simulasi</div>
+    <h1>Simulator HDD Crossing</h1>
+    <p class="proj" id="projLine">–</p>
+    <p class="lede">Atur crossing, pipa, dan profil di panel input. Profil lintasan, pull load, tegangan, dan animasi pilot–reaming–pullback dihitung ulang langsung. Baja: metode PRCI dan ASME B31.8. PE: ASTM F1962 dan PPI.</p>
+  </div>
+  <div class="actions">
+    <div class="verdict" id="verdict" role="status">–</div>
+    <div class="pdfrow"><button type="button" class="primary" id="btnPdf" hidden>Unduh PDF</button><span id="pdfMsg" class="hint" role="status"></span></div>
+  </div>
+</header>
+
+<div class="layout">
+<!-- ============ VIZ ============ -->
+<section class="viz" aria-label="Animasi profil HDD">
+  <div class="hud">
+    <div class="card"><div class="phase" id="hudPhase">Pengeboran pilot</div><div class="sub" id="hudSub">–</div></div>
+    <div class="card" id="hudMeterCard"><div class="sub" id="hudMeterLbl">Gaya tarik di kepala tarik</div><div class="hudrow"><div class="big" id="hudVal">–</div><div class="sub" id="hudLim">–</div></div><div class="meter"><i id="hudBar"></i><b id="hudMark1"></b><b id="hudMark2" style="background:var(--bad)"></b></div></div>
+  </div>
+  <div class="stage" id="stage">
+    <canvas id="cv" aria-label="Animasi penampang crossing HDD"></canvas>
+    <div class="alert" id="alert" hidden></div>
+    <div class="scale" id="scaleNote">–</div>
+  </div>
+  <div class="timeline" aria-hidden="true"><div><i id="tl0"></i></div><div><i id="tl1"></i></div><div><i id="tl2"></i></div></div>
+  <div class="controls">
+    <button id="btnPlay" aria-pressed="true">Jeda</button>
+    <button id="btnRestart">Ulang</button>
+    <button data-phase="0">Pilot</button><button data-phase="1">Reaming</button><button data-phase="2">Pullback</button>
+    <span class="sep"></span>
+    <label for="veMode" class="hint" style="margin:0">Skala vertikal</label>
+    <select id="veMode" style="width:auto"><option value="lim" selected>Diperbesar terbatas</option><option value="true">1 : 1 (sebenarnya)</option><option value="full">Diperbesar penuh</option></select>
+    <label for="speed" class="hint" style="margin:0">Kecepatan</label>
+    <select id="speed" style="width:auto"><option value="0.5">0,5×</option><option value="1" selected>1×</option><option value="2">2×</option></select>
+  </div>
+  <div class="legend" id="legend"></div>
+</section>
+
+<!-- ============ INPUTS ============ -->
+<aside class="inputs" aria-label="Input data">
+<form id="frm" onsubmit="return false">
+<fieldset id="fsScen">
+  <legend>Skenario tersimpan</legend>
+  <div class="scrow"><input type="text" id="scName" placeholder="Nama skenario, mis. Skenario A" maxlength="120" aria-label="Nama skenario"><button type="button" class="primary" id="btnScSave">Simpan</button></div>
+  <div class="chips"><button type="button" id="btnScNew">Skenario baru</button><button type="button" id="btnScExport">Ekspor .json</button><button type="button" id="btnScImport">Impor .json</button><input type="file" id="scFile" accept=".json,application/json" hidden></div>
+  <p class="hint" id="scMsg" role="status"></p>
+  <details class="scbox" id="scBox" open><summary>Daftar skenario <span id="scCount"></span></summary><ul class="sclist" id="scList"></ul></details>
+  <p class="hint" id="scWhere"></p>
+</fieldset>
+<fieldset id="fsProj">
+  <legend>Proyek &amp; dokumen <span class="eyebrow">00</span></legend>
+  <div class="f wide"><label for="projName">Nama proyek<small>Muncul sebagai judul laporan PDF</small></label><input type="text" id="projName" value="" placeholder="mis. Pembangunan Pipa Gas Distribusi 4″ Medan"></div>
+  <div class="f wide"><label for="projClient">Klien / pemilik</label><input type="text" id="projClient" value="" placeholder="Nama perusahaan pemilik proyek"></div>
+  <div class="f"><label for="docNo">No. dokumen</label><input type="text" id="docNo" value="" placeholder="XXX-CA-0001"></div>
+  <div class="f"><label for="docRev">Revisi</label><input type="text" id="docRev" value="A"></div>
+  <div class="f"><label for="docDate">Tanggal</label><input type="date" id="docDate"></div>
+  <div class="f"><label for="prepBy">Disusun oleh</label><input type="text" id="prepBy" value="" placeholder="Nama"></div>
+  <div class="f"><label for="chkBy">Diperiksa oleh</label><input type="text" id="chkBy" value="" placeholder="Nama"></div>
+</fieldset>
+<fieldset>
+  <legend>Crossing <span class="eyebrow">01</span></legend>
+  <div class="seg" role="radiogroup" aria-label="Jenis crossing">
+    <input type="radio" name="cross" id="cross-river" value="river" checked><label for="cross-river">Sungai</label>
+    <input type="radio" name="cross" id="cross-road" value="road"><label for="cross-road">Jalan</label>
+  </div>
+  <div class="f"><label for="crossName">Nama crossing</label><input type="text" id="crossName" value="Sungai Belumai"></div>
+  <div class="f"><label for="W" id="lblW">Lebar sungai (tepi–tepi)<small>m</small></label><input type="number" id="W" value="100" min="5" step="1"></div>
+  <div class="f" id="rowRiverDepth"><label for="riverDepth">Kedalaman sungai<small>m, dari tepi ke dasar</small></label><input type="number" id="riverDepth" value="6" min="0.5" step="0.5"></div>
+  <div class="f"><label for="cover" id="lblCover">Cover minimum di bawah dasar sungai<small>m, ke top of pipe</small></label><input type="number" id="cover" value="5" min="1" step="0.5"></div>
+  <div class="f"><label for="margin">Perpanjangan segmen datar<small>m, di luar tiap tepi (antisipasi gerusan)</small></label><input type="number" id="margin" value="10" min="0" step="1"></div>
+</fieldset>
+
+<fieldset>
+  <legend>Pipa <span class="eyebrow">02</span></legend>
+  <div class="seg" role="radiogroup" aria-label="Material pipa">
+    <input type="radio" name="mat" id="mat-steel" value="steel" checked><label for="mat-steel">Baja API 5L</label>
+    <input type="radio" name="mat" id="mat-pe" value="pe"><label for="mat-pe">Polyethylene</label>
+  </div>
+  <div id="grpSteel">
+    <div class="f"><label for="nps">Diameter nominal<small>ASME B36.10M</small></label><select id="nps"></select></div>
+    <div class="f"><label for="sch">Schedule / tebal</label><select id="sch"></select></div>
+    <div class="f" id="rowWt" hidden><label for="wtCustom">Tebal dinding custom<small>mm</small></label><input type="number" id="wtCustom" value="6.4" min="2" step="0.1"></div>
+    <div class="f"><label for="grade">Grade<small>API 5L PSL2</small></label><select id="grade"></select></div>
+    <div class="f"><label for="coatT">Coating 3LPE<small>tebal mm</small></label><input type="number" id="coatT" value="2.5" min="0" step="0.1"></div>
+    <div class="f"><label for="coatRho">Densitas coating<small>kg/m³</small></label><input type="number" id="coatRho" value="940" min="0" step="10"></div>
+    <div class="f u"><label for="ca">Corrosion allowance</label><div class="uv"><input type="number" id="ca" value="0.0625" min="0" step="any"><select id="caU" aria-label="Satuan corrosion allowance"><option value="in" selected>inch</option><option value="mm">mm</option></select></div></div>
+    <div class="f u"><label for="dp">Tekanan desain</label><div class="uv"><input type="number" id="dp" value="40" min="0" step="any"><select id="dpU" aria-label="Satuan tekanan desain"><option value="barg" selected>barg</option><option value="psig">psig</option></select></div></div>
+    <div class="f"><label for="loc">Location class<small>ASME B31.8 Tabel 841.1.6-1</small></label><select id="loc"></select></div>
+    <div class="f"><label for="htF">Faktor tekanan hydrotest<small id="htHint">× tekanan desain</small></label><input type="number" id="htF" value="1.5" min="1" step="0.05"></div>
+    <div class="f u"><label for="tInst">Suhu instalasi<small>suhu saat tie-in / pipa tertahan</small></label><div class="uv"><input type="number" id="tInst" value="30" step="any"><select id="tInstU" aria-label="Satuan suhu instalasi"><option value="C" selected>°C</option><option value="F">°F</option></select></div></div>
+    <div class="f u"><label for="tOp">Suhu operasi</label><div class="uv"><input type="number" id="tOp" value="55" step="any"><select id="tOpU" aria-label="Satuan suhu operasi"><option value="C" selected>°C</option><option value="F">°F</option></select></div></div>
+    <div class="f"><label for="bendFrac">Batas bending elastis<small>% SMYS, untuk natural bend &amp; span</small></label><input type="number" id="bendFrac" value="40" min="10" max="90" step="5"></div>
+    <div class="f"><label for="joint">Panjang 1 joint<small>m</small></label><input type="number" id="joint" value="12" min="6" step="0.5"></div>
+  </div>
+  <div id="grpPE" hidden>
+    <div class="f"><label for="peOD">Diameter luar (OD)<small>mm, seri ISO 4437</small></label><select id="peOD"></select></div>
+    <div class="f"><label for="sdr">SDR<small>t = OD / SDR</small></label><select id="sdr"></select></div>
+    <div class="f"><label for="peMat">Material</label><select id="peMat"></select></div>
+    <div class="f"><label for="peSy">Kuat leleh tarik σy<small>MPa, data pabrikan</small></label><input type="number" id="peSy" value="22" min="10" step="0.5"></div>
+    <div class="f u"><label for="peDP">Tekanan desain</label><div class="uv"><input type="number" id="peDP" value="4" min="0" step="any"><select id="peDPU" aria-label="Satuan tekanan desain PE"><option value="barg" selected>barg</option><option value="psig">psig</option></select></div></div>
+    <div class="f"><label for="peC">Faktor desain C<small>ISO 4437: ≥ 2,0</small></label><input type="number" id="peC" value="2" min="1.25" step="0.1"></div>
+    <div class="f"><label for="peHtF">Faktor tekanan pneumatic test<small>× tekanan desain (udara / nitrogen)</small></label><input type="number" id="peHtF" value="1.1" min="1" step="0.05"></div>
+    <div class="f u"><label for="peTemp">Suhu pipa saat ditarik</label><div class="uv"><input type="number" id="peTemp" value="30" step="any"><select id="peTempU" aria-label="Satuan suhu pipa"><option value="C" selected>°C</option><option value="F">°F</option></select></div></div>
+    <div class="f"><label for="ovality">Ovalitas<small>%</small></label><input type="number" id="ovality" value="3" min="0" step="0.5"></div>
+    <div class="f"><label for="peSF">Faktor keamanan buckling</label><input type="number" id="peSF" value="2" min="1" step="0.1"></div>
+    <div class="f"><label for="durMode">Durasi pullback</label><select id="durMode"><option value="auto">Dari kecepatan tarik</option><option value="manual">Manual (jam)</option></select></div>
+    <div class="f" id="rowSpeed"><label for="pullSpeed">Kecepatan tarik<small>m/menit</small></label><input type="number" id="pullSpeed" value="3" min="0.2" step="0.5"></div>
+    <div class="f" id="rowDur" hidden><label for="durH">Durasi<small>jam</small></label><input type="number" id="durH" value="6" min="0.5" step="0.5"></div>
+  </div>
+</fieldset>
+
+<fieldset>
+  <legend>Profil &amp; titik entry/exit <span class="eyebrow">03</span></legend>
+  <div class="f"><label for="angEntry">Sudut entry<small>derajat, sisi rig (tipikal 8–20°)</small></label><input type="number" id="angEntry" value="10" min="4" max="25" step="0.5"></div>
+  <div class="f"><label for="angExit">Sudut exit<small>derajat, sisi pipa (tipikal 5–10°)</small></label><input type="number" id="angExit" value="8" min="3" max="20" step="0.5"></div>
+  <div class="f"><label for="rMode">Radius lengkung</label><select id="rMode"><option value="auto">Rekomendasi otomatis</option><option value="manual">Manual</option></select></div>
+  <div class="f" id="rowR" hidden><label for="rManual">Radius desain<small>m</small></label><input type="number" id="rManual" value="200" min="5" step="5"></div>
+  <div class="f"><label for="rRod">Radius minimum drill rod<small>m, dari data rig (0 = abaikan)</small></label><input type="number" id="rRod" value="60" min="0" step="5"></div>
+  <div class="f"><label for="entryMode">Jarak titik entry</label><select id="entryMode"><option value="auto">Rekomendasi</option><option value="avail">Jarak tersedia</option></select></div>
+  <div class="f" id="rowEntryAvail" hidden><label for="entryAvail">Jarak entry tersedia<small>m, dari tepi crossing</small></label><input type="number" id="entryAvail" value="80" min="5" step="1"></div>
+  <div class="f"><label for="exitMode">Jarak titik exit</label><select id="exitMode"><option value="auto">Rekomendasi</option><option value="avail">Jarak tersedia</option></select></div>
+  <div class="f" id="rowExitAvail" hidden><label for="exitAvail">Jarak exit tersedia<small>m, dari tepi crossing</small></label><input type="number" id="exitAvail" value="80" min="5" step="1"></div>
+  <p class="hint">Mode "jarak tersedia": sudut dinaikkan sampai batas, lalu radius diturunkan sampai radius minimum, agar profil muat.</p>
+</fieldset>
+
+<fieldset>
+  <legend>Lumpur, tanah &amp; rig <span class="eyebrow">04</span></legend>
+  <div class="f"><label for="mudSG">Densitas lumpur<small>SG (1,2 = 10 ppg)</small></label><input type="number" id="mudSG" value="1.2" min="1" max="1.8" step="0.02"></div>
+  <div class="f"><label for="muSoil">Koef. gesek di lubang μ<small>PRCI 0,21–0,30</small></label><input type="number" id="muSoil" value="0.3" min="0.05" step="0.01"></div>
+  <div class="f" id="rowDrag"><label for="dragPsi">Fluid drag<small>psi (PRCI 0,025; NEN 0,05)</small></label><input type="number" id="dragPsi" value="0.05" min="0" step="0.005"></div>
+  <div class="f" id="rowHk" hidden><label for="hkKpa">Tekanan hidrokinetik<small>kPa (F1962: 69 kPa = 10 psi)</small></label><input type="number" id="hkKpa" value="69" min="0" step="1"></div>
+  <div class="f"><label for="muAbove">Pipa string di atas tanah</label><select id="muAbove"><option value="0.1">Di atas roller (μ 0,1)</option><option value="0.5">Diseret di tanah (μ 0,5)</option></select></div>
+  <div class="f"><label for="ballast">Ballast saat pullback</label><select id="ballast"><option value="none">Kosong</option><option value="water">Diisi air</option></select></div>
+  <div class="f"><label for="soil">Jenis tanah<small>sepanjang lintasan, dari data bor</small></label><select id="soil"></select></div>
+  <p class="hint" id="soilHint"></p>
+  <div id="grpSoil" hidden>
+    <div class="f"><label for="soilC">Kohesi c<small>kPa (lempung: ≈ Su)</small></label><input type="number" id="soilC" value="50" min="0" step="5"></div>
+    <div class="f"><label for="soilPhi">Sudut geser φ<small>derajat (0 untuk lempung undrained)</small></label><input type="number" id="soilPhi" value="0" min="0" max="50" step="1"></div>
+    <div class="f"><label for="soilG">Modulus geser G<small>MPa</small></label><input type="number" id="soilG" value="15" min="0.5" step="1"></div>
+    <div class="f"><label for="soilGam">Berat isi jenuh γsat<small>kN/m³</small></label><input type="number" id="soilGam" value="19" min="12" max="28" step="0.5"></div>
+  </div>
+  <div class="f"><label for="annGrad">Kehilangan tekanan annulus<small>kPa per 100 m</small></label><input type="number" id="annGrad" value="5" min="0" step="1"></div>
+  <div class="f"><label for="pilotIn">Diameter pilot bit<small>inch</small></label><input type="number" id="pilotIn" value="9.875" min="3" step="0.125"></div>
+  <div class="f"><label for="dpSize">Drill pipe<small>berat nominal + tool joint</small></label><select id="dpSize"><option value="2.875">2⅞″ · 15,5 kg/m</option><option value="3.5" selected>3½″ · 19,8 kg/m</option><option value="4.5">4½″ · 24,7 kg/m</option><option value="5">5″ · 29,0 kg/m</option><option value="5.5">5½″ · 32,6 kg/m</option><option value="6.625">6⅝″ · 37,5 kg/m</option></select></div>
+  <div class="f"><label for="wobT">Gaya dorong di bit saat pilot<small>ton (WOB; batuan dengan mud motor lebih besar)</small></label><input type="number" id="wobT" value="2" min="0" step="0.5"></div>
+  <div class="f"><label for="reamStep">Kenaikan diameter per pass reaming<small>inch</small></label><input type="number" id="reamStep" value="8" min="2" step="1"></div>
+  <div class="f"><label for="qReam">Tahanan potong reamer<small>kPa, 0 = otomatis dari jenis tanah</small></label><input type="number" id="qReam" value="0" min="0" step="50"></div>
+  <div class="f"><label for="rigTorque">Torsi rig<small>kN·m, 0 = tidak dicek</small></label><input type="number" id="rigTorque" value="0" min="0" step="5"></div>
+  <div class="f"><label for="fracSF">FK hydrofracture<small>terhadap Pmax Delft</small></label><input type="number" id="fracSF" value="2" min="1" step="0.1"></div>
+  <div class="f"><label for="rigCap">Kapasitas tarik rig<small>ton</small></label><input type="number" id="rigCap" value="20" min="1" step="1"></div>
+  <div class="f"><label for="rigSF">Faktor keamanan rig<small>× pull load (1,5–2,0)</small></label><input type="number" id="rigSF" value="1.5" min="1" step="0.1"></div>
+  <div class="f"><label for="rigDerate">Kapasitas efektif rig<small>% dari kapasitas brosur, kerja kontinu</small></label><input type="number" id="rigDerate" value="80" min="40" max="100" step="5"></div>
+</fieldset>
+
+<fieldset>
+  <legend>Simulasi kondisi lubang <span class="eyebrow">05</span></legend>
+  <div class="f wide"><label for="kHamb">Faktor hambatan lubang<small>Pengali gesekan &amp; drag: lubang runtuh, swelling, cutting bed</small></label>
+    <div class="range"><input type="range" id="kHamb" min="1" max="8" step="0.1" value="1"><output id="kOut" class="num" for="kHamb">1,0×</output></div></div>
+  <div class="chips"><button type="button" data-k="1">Normal</button><button type="button" data-k="2.5">Cutting bed</button><button type="button" data-k="5">Lubang runtuh</button></div>
+  <p class="hint">Naikkan faktor ini untuk melihat kapan rig tidak kuat menarik atau, untuk pipa PE, kapan pipa putus.</p>
+</fieldset>
+</form>
+</aside>
+
+<!-- ============ RESULTS ============ -->
+<section class="results" aria-label="Hasil perhitungan">
+  <dl class="cards" id="cards"></dl>
+  <ul class="msgs" id="msgs"></ul>
+
+  <div class="sec">
+    <div class="sec-h"><h2>Pemeriksaan desain</h2><p>UC = nilai/batas. Nilai di atas 1,00 berarti tidak memenuhi.</p></div>
+    <div class="tw"><table id="tblChecks"></table></div>
+  </div>
+
+  <div class="sec" id="secRig">
+    <div class="sec-h"><h2>Tonase minimum mesin HDD</h2><p>Kapasitas dorong/tarik rig yang dibutuhkan, dicek pada fase pilot, reaming, dan pullback. Fase dengan beban terbesar yang menentukan.</p></div>
+    <div class="rigbox">
+      <div class="rigbig"><div class="eyebrow">Kapasitas brosur minimum</div><div class="num" id="rigBig">–</div><div id="rigRec" class="hint">–</div></div>
+      <div class="tw"><table id="tblRig"></table></div>
+    </div>
+    <ul class="plain" id="rigNotes" style="margin-top:12px;color:var(--muted);font-size:12.5px"></ul>
+  </div>
+
+  <div class="sec">
+    <div class="sec-h"><h2>Pull load selama pullback</h2><p id="pullNote"></p></div>
+    <div class="chart" id="chPull"></div>
+    <div class="keys" id="keyPull"></div>
+    <div class="tw" style="margin-top:12px"><table id="tblPull"></table></div>
+  </div>
+
+  <div class="grid2">
+    <div class="sec"><div class="sec-h"><h2>Profil lintasan</h2></div><div class="tw"><table id="tblGeo"></table></div></div>
+    <div class="sec"><div class="sec-h"><h2>Properti pipa</h2></div><div class="tw"><table id="tblPipe"></table></div></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-h"><h2 id="hStress">Tegangan instalasi sepanjang lintasan</h2><p id="stressNote"></p></div>
+    <div class="chart" id="chStress"></div>
+    <div class="keys" id="keyStress"></div>
+  </div>
+
+  <div class="grid2">
+    <div class="sec"><div class="sec-h"><h2 id="hDetail">Hydrotest &amp; operasi</h2></div><div class="tw"><table id="tblDetail"></table></div></div>
+    <div class="sec"><div class="sec-h"><h2 id="hNb">Natural bending &amp; span roller</h2></div><div class="tw"><table id="tblNb"></table></div></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-h"><h2>Hydrofracture (frac-out)</h2><p id="fracNote"></p></div>
+    <div class="chart" id="chFrac"></div>
+    <div class="keys" id="keyFrac"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-h"><h2>Pendukung konstruksi</h2><button type="button" id="btnCopy">Salin ringkasan</button></div>
+    <div class="tw"><table id="tblCon"></table></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-h"><h2>Standar &amp; referensi</h2><p>Dipakai sesuai bagian perhitungan. Gunakan edisi yang berlaku di kontrak.</p></div>
+    <div class="std" id="std"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-h"><h2>Asumsi &amp; batasan</h2></div>
+    <ul class="plain" id="assume"></ul>
+    <p class="foot">Alat bantu desain awal (screening/FEED). Hasil akhir tetap perlu diverifikasi engineer yang berwenang, dengan data geoteknik, survei, dan data rig/lumpur aktual dari kontraktor.</p>
+  </div>
+</section>
+</div>
+</div>
+
+<script>
+/* ==== HDD ENGINE: geometry, pullback, stresses (SI units inside: m, N, Pa) ==== */
+const HDD = (() => {
+'use strict';
+const G = 9.80665, PSI = 6894.757, IN = 0.0254;
+
+const STEEL = {
+  '2': { dn: 50, od: 2.375, s: [['40 / STD', .154], ['80 / XS', .218], ['160', .344], ['XXS', .436]] },
+  '3': { dn: 80, od: 3.5, s: [['40 / STD', .216], ['80 / XS', .300], ['160', .438], ['XXS', .600]] },
+  '4': { dn: 100, od: 4.5, s: [['40 / STD', .237], ['80 / XS', .337], ['120', .438], ['160', .531], ['XXS', .674]] },
+  '6': { dn: 150, od: 6.625, s: [['40 / STD', .280], ['80 / XS', .432], ['120', .562], ['160', .719], ['XXS', .864]] },
+  '8': { dn: 200, od: 8.625, s: [['20', .250], ['30', .277], ['40 / STD', .322], ['60', .406], ['80 / XS', .500], ['100', .594], ['120', .719], ['140', .812], ['160', .906]] },
+  '10': { dn: 250, od: 10.75, s: [['20', .250], ['30', .307], ['40 / STD', .365], ['60 / XS', .500], ['80', .594], ['100', .719], ['120', .844], ['140', 1.000], ['160', 1.125]] },
+  '12': { dn: 300, od: 12.75, s: [['20', .250], ['30', .330], ['STD', .375], ['40', .406], ['XS', .500], ['60', .562], ['80', .688], ['100', .844], ['120', 1.000], ['140', 1.125], ['160', 1.312]] },
+  '14': { dn: 350, od: 14, s: [['10', .250], ['20', .312], ['30 / STD', .375], ['40', .438], ['XS', .500], ['60', .594], ['80', .750], ['100', .938], ['120', 1.094], ['140', 1.250], ['160', 1.406]] },
+  '16': { dn: 400, od: 16, s: [['10', .250], ['20', .312], ['30 / STD', .375], ['40 / XS', .500], ['60', .656], ['80', .844], ['100', 1.031], ['120', 1.219], ['140', 1.438], ['160', 1.594]] },
+  '18': { dn: 450, od: 18, s: [['10', .250], ['20', .312], ['STD', .375], ['30', .438], ['XS', .500], ['40', .562], ['60', .750], ['80', .938], ['100', 1.156], ['120', 1.375], ['140', 1.562], ['160', 1.781]] },
+  '20': { dn: 500, od: 20, s: [['10', .250], ['20 / STD', .375], ['30 / XS', .500], ['40', .594], ['60', .812], ['80', 1.031], ['100', 1.281], ['120', 1.500], ['140', 1.750], ['160', 1.969]] },
+  '24': { dn: 600, od: 24, s: [['10', .250], ['20 / STD', .375], ['XS', .500], ['30', .562], ['40', .688], ['60', .969], ['80', 1.219], ['100', 1.531], ['120', 1.812], ['140', 2.062], ['160', 2.344]] }
+};
+const GRADES = [
+  ['B', 'Grade B (L245)', 245, 415], ['X42', 'X42 (L290)', 290, 415], ['X46', 'X46 (L320)', 320, 435],
+  ['X52', 'X52 (L360)', 360, 460], ['X56', 'X56 (L390)', 390, 490], ['X60', 'X60 (L415)', 415, 520],
+  ['X65', 'X65 (L450)', 450, 535], ['X70', 'X70 (L485)', 485, 570], ['X80', 'X80 (L555)', 555, 625]
+];
+const LOC = {
+  '1-1': { F: .80, test: 1.25, label: 'Kelas 1 Div. 1' }, '1-2': { F: .72, test: 1.10, label: 'Kelas 1 Div. 2' },
+  '2': { F: .60, test: 1.25, label: 'Kelas 2' }, '3': { F: .50, test: 1.40, label: 'Kelas 3' }, '4': { F: .40, test: 1.40, label: 'Kelas 4' }
+};
+const PE_OD = [63, 90, 110, 125, 160, 180, 200, 225, 250, 280, 315, 355, 400, 450, 500, 560, 630];
+const PE_SDR = [7.4, 9, 11, 13.6, 17, 21, 26];
+const PE_MAT = {
+  PE80: { mrs: 8, sy: 19, Es: 380, El: 150, rho: 945, label: 'PE80 (MRS 8 MPa)' },
+  PE100: { mrs: 10, sy: 22, Es: 440, El: 200, rho: 955, label: 'PE100 (MRS 10 MPa)' }
+};
+const SOILS = {
+  'clay-soft': { label: 'Lempung lunak', c: 15, phi: 0, G: 3000, gsat: 16.5, k: .5, mf: 4 },
+  'clay-stiff': { label: 'Lempung kaku', c: 60, phi: 0, G: 15000, gsat: 19, k: .5, mf: 4 },
+  'silt': { label: 'Lanau kelempungan', c: 15, phi: 22, G: 8000, gsat: 18, k: .5, mf: 3.5 },
+  'sand-loose': { label: 'Pasir lepas', c: 0, phi: 28, G: 8000, gsat: 18, k: 2 / 3, mf: 3 },
+  'sand-dense': { label: 'Pasir padat', c: 0, phi: 35, G: 30000, gsat: 20, k: 2 / 3, mf: 3 },
+  'clay-hard': { label: 'Lempung keras (N-SPT ±30)', c: 150, phi: 0, G: 40000, gsat: 20, k: .5, mf: 4 },
+  'clay-spt60': { label: 'Lempung keras N-SPT ≥ 60', c: 250, phi: 0, G: 60000, gsat: 20.5, k: .5, mf: 4, note: 'Su ≈ 4–6 × N (Stroud), batas bawah; G ≈ 1/4 G₀ dari korelasi Vs–N' },
+  'sand-spt60': { label: 'Pasir/kerikil sangat padat N-SPT ≥ 60', c: 0, phi: 40, G: 60000, gsat: 21, k: 2 / 3, mf: 4, note: 'φ dari Peck–Hanson–Thornburn (N ≥ 50 → 41–43°), dibulatkan konservatif; G ≈ 1/4 G₀' },
+  'gravel': { label: 'Kerikil / sirtu padat', c: 0, phi: 38, G: 50000, gsat: 21, k: 2 / 3, mf: 5 },
+  'rock-soft': { label: 'Batuan lunak / lapuk', c: 300, phi: 30, G: 200000, gsat: 22, k: .5, mf: 2.5 },
+  'rock': { label: 'Batuan keras', c: 0, phi: 0, G: 0, gsat: 24, k: .5, mf: 2, rock: true },
+  'custom': { label: 'Custom (data soil investigation)', c: 0, phi: 0, G: 0, gsat: 18, k: .5, mf: 3.5 }
+};
+
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const rad = d => d * Math.PI / 180, deg = r => r * 180 / Math.PI;
+const lerpTable = (tab, x) => {
+  if (x <= tab[0][0]) return tab[0][1];
+  for (let i = 1; i < tab.length; i++) if (x <= tab[i][0]) {
+    const [x0, y0] = tab[i - 1], [x1, y1] = tab[i];
+    return y0 + (y1 - y0) * (x - x0) / (x1 - x0);
+  }
+  return tab[tab.length - 1][1];
+};
+// PPI / ASTM F1962 time-under-tension factor (log interpolation)
+const timeFactor = h => {
+  const t = [[1, .95], [12, .91], [24, .88], [48, .85]];
+  if (h <= 1) return .95;
+  const lh = Math.log(h);
+  return lerpTable(t.map(([a, b]) => [Math.log(a), b]), lh);
+};
+// typical PPI temperature compensating factor for tensile strength (23 °C base)
+const tempFactor = c => c <= 23 ? 1 : lerpTable([[23, 1], [27, .95], [32, .89], [38, .82], [43, .76], [49, .70]], c);
+const peBendFactor = sdr => sdr <= 9 ? 20 : sdr <= 13.6 ? 25 : sdr <= 21 ? 27 : 34;
+
+/* ---------- geometry ---------- */
+function sideH(th, R, D) {
+  const V = R * (1 - Math.cos(th));
+  if (V > D + 1e-9) return null;
+  const Lt = (D - V) / Math.sin(th);
+  return { H: Lt * Math.cos(th) + R * Math.sin(th), Lt, V, Hc: R * Math.sin(th), th };
+}
+function thMaxFit(R, D) { return Math.acos(clamp(1 - D / R, -1, 1)); }
+
+function solveSide(o) {
+  // o: {th, R, D, mode, avail, m, thLo, thHi, Rmin}
+  const res = { msgs: [], status: 'ok' };
+  let th = o.th, R = o.R;
+  let s = sideH(th, R, o.D);
+  if (!s) {
+    th = thMaxFit(R, o.D) * 0.999; s = sideH(th, R, o.D);
+    res.msgs.push(`Sudut ${fmtDeg(o.th)} terlalu curam untuk kedalaman ini dengan R ${Math.round(R)} m; dipakai ${fmtDeg(th)}.`);
+    res.status = 'adjusted';
+  }
+  if (o.mode === 'avail') {
+    const target = o.avail - o.m;
+    if (s.H > target) {
+      let found = null;
+      // 1) steepen angle
+      for (let t = th; t <= o.thHi + 1e-9; t += rad(0.05)) {
+        const q = sideH(t, R, o.D); if (!q) break;
+        if (q.H <= target) { found = q; break; }
+      }
+      if (found) {
+        res.msgs.push(`Sudut dinaikkan dari ${fmtDeg(o.th)} menjadi ${fmtDeg(found.th)} agar muat di jarak tersedia ${o.avail.toFixed(0)} m.`);
+        res.status = 'adjusted'; s = found; th = found.th;
+      } else {
+        // 2) reduce radius down to Rmin with angles up to thHi
+        let f2 = null;
+        for (let r = R; r >= o.Rmin - 1e-9 && !f2; r -= Math.max(1, R / 200)) {
+          for (let t = o.th; t <= o.thHi + 1e-9; t += rad(0.1)) {
+            const q = sideH(t, r, o.D); if (!q) break;
+            if (q.H <= target) { f2 = { q, r }; break; }
+          }
+        }
+        if (f2) {
+          s = f2.q; th = f2.q.th; R = f2.r;
+          res.msgs.push(`Jarak tersedia tidak cukup dengan R ${Math.round(o.R)} m; radius diturunkan ke ${Math.round(R)} m dan sudut ${fmtDeg(th)}.`);
+          res.status = 'adjusted';
+        } else {
+          res.status = 'fail';
+          const best = sideH(Math.min(o.thHi, thMaxFit(o.Rmin, o.D) * .999), o.Rmin, o.D);
+          res.msgs.push(`Jarak tersedia ${o.avail.toFixed(0)} m tidak cukup. Minimum yang mungkin ±${best ? (best.H + o.m).toFixed(0) : '?'} m (sudut ${fmtDeg(o.thHi)}, R minimum ${Math.round(o.Rmin)} m). Tambah jarak, kurangi kedalaman/cover, atau kurangi margin.`);
+          if (best) { s = best; th = best.th; R = o.Rmin; }   // draw the closest feasible profile
+        }
+      }
+    }
+  }
+  res.th = th; res.R = R; res.g = s; res.need = s.H + o.m;
+  return res;
+}
+const fmtDeg = r => (deg(r)).toFixed(1).replace('.', ',') + '°';
+
+function buildPath(p) {
+  // p: th1, th2, R1, R2, zc, xf1, xf2, g1, g2
+  const segs = [];
+  const { th1, th2, R1, R2, zc, xf1, xf2, g1, g2 } = p;
+  const c1 = Math.cos(th1), s1 = Math.sin(th1), c2 = Math.cos(th2), s2 = Math.sin(th2);
+  segs.push({ k: 'tanEntry', name: 'Tangen entry', type: 'line', L: g1.Lt, R: Infinity,
+    pos: u => [u * c1, -u * s1], ang: () => th1 });
+  segs.push({ k: 'arcEntry', name: 'Lengkung entry', type: 'arc', L: R1 * th1, R: R1,
+    pos: u => { const f = th1 - u / R1; return [xf1 - R1 * Math.sin(f), zc + R1 - R1 * Math.cos(f)]; }, ang: u => th1 - u / R1 });
+  segs.push({ k: 'flat', name: 'Segmen datar', type: 'line', L: xf2 - xf1, R: Infinity,
+    pos: u => [xf1 + u, zc], ang: () => 0 });
+  segs.push({ k: 'arcExit', name: 'Lengkung exit', type: 'arc', L: R2 * th2, R: R2,
+    pos: u => { const f = u / R2; return [xf2 + R2 * Math.sin(f), zc + R2 - R2 * Math.cos(f)]; }, ang: u => -u / R2 });
+  const x5 = xf2 + R2 * s2, z5 = zc + R2 * (1 - c2);
+  segs.push({ k: 'tanExit', name: 'Tangen exit', type: 'line', L: g2.Lt, R: Infinity,
+    pos: u => [x5 + u * c2, z5 + u * s2], ang: () => -th2 });
+  let s0 = 0;
+  for (const sg of segs) { sg.s0 = s0; s0 += sg.L; }
+  return { segs, L: s0 };
+}
+function pathPoint(path, s) {
+  s = clamp(s, 0, path.L);
+  for (const sg of path.segs) {
+    if (s <= sg.s0 + sg.L + 1e-9) {
+      const u = clamp(s - sg.s0, 0, sg.L);
+      const [x, z] = sg.pos(u);
+      return { x, z, a: sg.ang(u), R: sg.R, seg: sg };
+    }
+  }
+  const sg = path.segs[path.segs.length - 1];
+  const [x, z] = sg.pos(sg.L); return { x, z, a: sg.ang(sg.L), R: sg.R, seg: sg };
+}
+
+const getSoil = I => {
+  const b = SOILS[I.soil] || SOILS['clay-stiff'];
+  if (I.soil !== 'custom') return b;
+  const phi = Math.max(0, I.soilPhi || 0), c = Math.max(0, I.soilC || 0);
+  return { ...b, label: 'Custom', c, phi, G: Math.max(500, (I.soilG || 10) * 1000), gsat: Math.max(12, I.soilGam || 18), k: phi > 5 ? 2 / 3 : .5 };
+};
+/* ---------- main calc ---------- */
+function calc(I) {
+  const R = { warn: [], info: [], I };
+  const steel = I.mat === 'steel';
+  R.steel = steel;
+
+  /* pipe */
+  const P = {};
+  if (steel) {
+    const d = STEEL[I.nps];
+    P.D = d.od * IN; P.dn = d.dn; P.nps = I.nps;
+    const sch = d.s.find(x => x[0] === I.sch);
+    P.t = I.sch === 'custom' ? I.wtCustom / 1000 : sch[1] * IN;
+    P.schLabel = I.sch === 'custom' ? 'Custom' : 'Sch ' + I.sch;
+    const gr = GRADES.find(x => x[0] === I.grade);
+    P.grade = gr[1]; P.SMYS = gr[2]; P.SMTS = gr[3];
+    P.E = 207000; P.nu = .3; P.alpha = 11.7e-6; P.rho = 7850;
+    P.tc = I.coatT / 1000; P.rhoC = I.coatRho; P.CA = I.ca / 1000;
+  } else {
+    const m = PE_MAT[I.peMat];
+    P.D = I.peOD / 1000; P.SDR = I.sdr; P.t = P.D / P.SDR; P.mat = m; P.matKey = I.peMat;
+    P.E = m.Es; P.El = m.El; P.nu = .45; P.rho = m.rho; P.tc = 0; P.rhoC = 0; P.CA = 0;
+    P.sy = I.peSy;
+  }
+  P.Di = P.D - 2 * P.t; P.Dc = P.D + 2 * P.tc;
+  P.As = Math.PI / 4 * (P.D ** 2 - P.Di ** 2);
+  P.Iz = Math.PI / 64 * (P.D ** 4 - P.Di ** 4);
+  P.Z = 2 * P.Iz / P.D;
+  P.Dt = P.D / P.t;
+  P.wPipe = P.As * P.rho;
+  P.wCoat = Math.PI / 4 * (P.Dc ** 2 - P.D ** 2) * P.rhoC;
+  P.wa = P.wPipe + P.wCoat;                      // kg/m in air (empty)
+  P.wWater = Math.PI / 4 * P.Di ** 2 * 1000;     // kg/m water inside
+  const rhoMud = I.mudSG * 1000;
+  P.buoy = Math.PI / 4 * P.Dc ** 2 * rhoMud;     // kg/m displaced mud
+  P.wsEmpty = P.wa - P.buoy;
+  P.wsBallast = P.wa + P.wWater - P.buoy;
+  P.ws = I.ballast === 'water' ? P.wsBallast : P.wsEmpty; // kg/m effective (submerged), + = sinks
+  P.EI = P.E * 1e6 * P.Iz;
+  R.P = P;
+
+  /* radius */
+  const Rr = {};
+  if (steel) {
+    Rr.elastic = P.E * P.D / (2 * I.bendFrac * P.SMYS);
+    Rr.rule = 1200 * P.D;
+    Rr.rod = I.rRod || 0;
+    Rr.rec = Math.max(Rr.elastic, Rr.rule, Rr.rod);
+    Rr.min = Math.max(Rr.elastic, Rr.rod);
+  } else {
+    Rr.longterm = peBendFactor(P.SDR) * P.D;
+    Rr.rule = 40 * P.D;
+    Rr.rod = I.rRod || 0;
+    Rr.rec = Math.max(Rr.rule, Rr.rod);
+    Rr.min = Math.max(Rr.longterm, Rr.rod);
+  }
+  Rr.rec = Math.ceil(Rr.rec / 5) * 5;
+  const Rdesign = I.rMode === 'auto' ? Rr.rec : I.rManual;
+  if (Rdesign < Rr.min - 1e-6) R.warn.push(`Radius desain ${Math.round(Rdesign)} m lebih kecil dari radius minimum ${Math.round(Rr.min)} m.`);
+  R.Rr = Rr;
+
+  /* geometry */
+  const river = I.cross === 'river';
+  const obsDepth = river ? I.riverDepth : 0;
+  const zc = -(obsDepth + I.cover + P.Dc / 2);
+  const Dd = -zc;
+  const thHiE = rad(Math.max(I.angEntry, 20)), thHiX = rad(Math.max(I.angExit, 15));
+  const sE = solveSide({ th: rad(I.angEntry), R: Rdesign, D: Dd, mode: I.entryMode, avail: I.entryAvail, m: I.margin, thHi: thHiE, Rmin: Rr.min });
+  const sX = solveSide({ th: rad(I.angExit), R: Rdesign, D: Dd, mode: I.exitMode, avail: I.exitAvail, m: I.margin, thHi: thHiX, Rmin: Rr.min });
+  sE.msgs.forEach(m => R.warn.push('Sisi entry: ' + m));
+  sX.msgs.forEach(m => R.warn.push('Sisi exit: ' + m));
+  // When more distance is available than needed, keep the angle and radius and
+  // place the entry/exit point at the given distance: the deep flat section is extended.
+  const mE = I.entryMode === 'avail' && sE.status !== 'fail' ? Math.max(I.margin, I.entryAvail - sE.g.H) : I.margin;
+  const mX = I.exitMode === 'avail' && sX.status !== 'fail' ? Math.max(I.margin, I.exitAvail - sX.g.H) : I.margin;
+  if (mE > I.margin + .5) R.info.push(`Sisi entry: titik entry ditempatkan ${I.entryAvail.toFixed(0)} m dari tepi (minimum dibutuhkan ${sE.need.toFixed(0)} m). Sudut & radius tetap; segmen datar diperpanjang ${(mE - I.margin).toFixed(0)} m ke arah entry.`);
+  if (mX > I.margin + .5) R.info.push(`Sisi exit: titik exit ditempatkan ${I.exitAvail.toFixed(0)} m dari tepi (minimum dibutuhkan ${sX.need.toFixed(0)} m). Sudut & radius tetap; segmen datar diperpanjang ${(mX - I.margin).toFixed(0)} m ke arah exit.`);
+  const xf1 = sE.g.H, xE1 = xf1 + mE, xE2 = xE1 + I.W, xf2 = xE2 + mX, xExit = xf2 + sX.g.H;
+  const path = buildPath({ th1: sE.th, th2: sX.th, R1: sE.R, R2: sX.R, zc, xf1, xf2, g1: sE.g, g2: sX.g });
+  const geo = {
+    river, obsDepth, zc, Dd, xf1, xf2, xE1, xE2, xExit, path, L: path.L, span: xExit,
+    th1: sE.th, th2: sX.th, R1: sE.R, R2: sX.R, entryNeed: sE.need, exitNeed: sX.need,
+    entryStatus: sE.status, exitStatus: sX.status, Rdesign,
+    entryDist: xE1, exitDist: xExit - xE2
+  };
+  // surface profile
+  const bankLen = river ? Math.min(2 * obsDepth, I.W * .3) : 0;
+  const waterLvl = river ? -Math.min(.6, obsDepth * .15) : 0;
+  geo.bankLen = bankLen; geo.waterLvl = waterLvl;
+  geo.zSurf = x => {
+    if (!river || x <= xE1 || x >= xE2) return 0;
+    if (x < xE1 + bankLen) return -obsDepth * (x - xE1) / bankLen;
+    if (x > xE2 - bankLen) return -obsDepth * (xE2 - x) / bankLen;
+    return -obsDepth;
+  };
+  geo.waterDepth = x => river && x > xE1 && x < xE2 ? Math.max(0, waterLvl - geo.zSurf(x)) : 0;
+  // sampled path
+  const N = 700, pts = [];
+  for (let i = 0; i <= N; i++) {
+    const s = path.L * i / N, q = pathPoint(path, s);
+    pts.push({ s, x: q.x, z: q.z, a: q.a, R: q.R, k: q.seg.k });
+  }
+  geo.pts = pts;
+  // cover under obstacle
+  let minCov = Infinity, minCovX = 0;
+  for (const p of pts) if (p.x >= xE1 && p.x <= xE2) {
+    const c = geo.zSurf(p.x) - (p.z + P.Dc / 2);
+    if (c < minCov) { minCov = c; minCovX = p.x; }
+  }
+  geo.minCover = minCov; geo.minCoverX = minCovX;
+  // angle guidance
+  if (deg(geo.th1) < 8 || deg(geo.th1) > 20) R.info.push(`Sudut entry ${fmtDeg(geo.th1)} di luar rentang tipikal rig 8°–20°.`);
+  if (deg(geo.th2) < 5) R.info.push(`Sudut exit ${fmtDeg(geo.th2)} sangat landai: tangen exit ${Math.round(sX.g.Lt)} m dan titik exit ${Math.round(xExit - xE2)} m dari tepi. Sulit mengontrol arah pilot saat keluar; tipikal 5–10°.`);
+  if (steel && deg(geo.th2) > 10) R.info.push(`Sudut exit ${fmtDeg(geo.th2)} > 10°: untuk pipa baja, breakover pipa string di sisi exit perlu dukungan (side boom/roller tinggi).`);
+  R.geo = geo;
+
+  /* reamer & construction */
+  const DcIn = P.Dc / IN;
+  const DrIn = DcIn < 8 ? DcIn + 4 : DcIn <= 24 ? DcIn * 1.5 : DcIn + 12;
+  const C = {};
+  C.Dream = DrIn * IN;
+  C.pilotR = I.pilotIn * IN / 2;
+  C.Vhole = Math.PI / 4 * C.Dream ** 2 * path.L;
+  C.Vannulus = Math.PI / 4 * (C.Dream ** 2 - P.Dc ** 2) * path.L;
+  const soil = getSoil(I);
+  C.mudFactor = soil.mf;
+  C.Vmud = C.Vhole * soil.mf;
+  C.Lstring = path.L + 10;
+  C.pullHours = I.durMode === 'auto' ? Math.max(.5, path.L / (I.pullSpeed * 60)) : I.durH;
+  R.C = C;
+
+  /* ---------- pullback ---------- */
+  const mu = I.muSoil * I.kHamb, mua = I.muAbove;
+  const tau = steel ? I.dragPsi * PSI * I.kHamb : 0;
+  const hk = steel ? 0 : I.hkKpa * 1000 * Math.PI / 8 * (C.Dream ** 2 - P.D ** 2) * I.kHamb;
+  const wsN = P.ws * G, waN = P.wa * G;
+  const pullSegs = path.segs.slice().reverse().map(sg => ({ sg, c: path.L - (sg.s0 + sg.L), L: sg.L }));
+  function zAtEntryS(s) { return pathPoint(path, s).z; }
+
+  function arcPRCI(T1, l, Rr_, cosTh, dz, drag) {
+    const a = l / Rr_;
+    const h = Rr_ * (1 - Math.cos(a / 2));
+    const w = Math.abs(wsN) * cosTh;
+    let T2 = T1 + drag + wsN * dz, N = 0;
+    for (let it = 0; it < 30; it++) {
+      const Ta = Math.max((T1 + T2) / 2, 1);
+      const j = Math.sqrt(P.EI / Ta), u = l / (2 * j);
+      let X, br;
+      if (u < .2) {
+        const u3 = u ** 3, u4 = u ** 4;
+        X = j * (u3 / 3 - 2 * u ** 5 / 15 + 17 * u ** 7 / 315);
+        br = 5 * u4 / 24 - 61 * u ** 6 / 720;
+      } else {
+        X = l / 2 - j * Math.tanh(u);
+        br = (2 * u) ** 2 / 8 - 1 + 1 / Math.cosh(u);
+      }
+      const dw = w * j * j / Ta * br;
+      N = X > 1e-12 ? 2 * Ta * (h - dw) / X : 0;
+      const T2n = T1 + 2 * mu * Math.abs(N) + drag + wsN * dz;
+      if (Math.abs(T2n - T2) < .5) { T2 = T2n; break; }
+      T2 = .5 * T2 + .5 * T2n;
+    }
+    return { T2, N };
+  }
+
+  function march(sIn, keepNodes) {
+    const Lrem = Math.max(0, C.Lstring - sIn);
+    let T = sIn > 0 ? mua * waN * Lrem * Math.exp(mua * geo.th2) : mua * waN * C.Lstring;
+    const nodes = keepNodes ? [{ s: path.L, T }] : null;
+    const segOut = [];
+    for (const ps of pullSegs) {
+      const l = clamp(sIn - ps.c, 0, ps.L);
+      if (l <= 1e-9) break;
+      const sg = ps.sg;
+      const sStart = sg.s0 + sg.L, sEnd = sStart - l;     // entry-coords
+      const dz = zAtEntryS(sEnd) - zAtEntryS(sStart);    // elevation gain in pull direction
+      const T1 = T;
+      let fr = 0, dr = 0, N = 0;
+      if (sg.type === 'line') {
+        const cs = Math.cos(sg.ang(0));
+        fr = mu * Math.abs(wsN) * l * cs;
+        dr = Math.PI * P.Dc * l * tau;
+        T = T1 + fr + dr + wsN * dz;
+      } else {
+        const aS = sg.ang(clamp(sEnd - sg.s0, 0, sg.L)), aE = sg.ang(clamp(sStart - sg.s0, 0, sg.L));
+        const cs = Math.cos((aS + aE) / 2);
+        dr = Math.PI * P.Dc * l * tau;
+        if (steel) {
+          // PRCI beam model is defined for the whole curved section; for a partly filled
+          // section the normal force is pro-rated by the filled length (avoids the
+          // short-beam singularity of the 3-point model).
+          const frac = l / sg.L;
+          const dzF = sg.pos(0)[1] - sg.pos(sg.L)[1];
+          const r = arcPRCI(T1, sg.L, sg.R, cs, dzF, Math.PI * P.Dc * sg.L * tau);
+          N = r.N * frac; fr = 2 * mu * Math.abs(N);
+          T = T1 + fr + dr + wsN * dz;
+        } else {
+          const a = l / sg.R;
+          const base = T1 + mu * Math.abs(wsN) * l * cs + wsN * dz;
+          T = Math.exp(mu * a) * base + dr;
+          fr = T - T1 - wsN * dz - dr;
+        }
+      }
+      if (keepNodes) {
+        nodes.push({ s: sEnd, T });
+        segOut.push({ name: sg.name, k: sg.k, L: l, fr, dr, wt: wsN * dz, N, T1, T2: T });
+      }
+    }
+    const head = T + (sIn > 0 ? hk : 0);
+    if (keepNodes) nodes.forEach(n => n.T += hk);
+    return { head, nodes, segOut };
+  }
+  const curve = [];
+  const NS = 180;
+  let Tmax = 0, sMax = 0;
+  for (let i = 0; i <= NS; i++) {
+    const s = path.L * i / NS, T = march(s, false).head;
+    curve.push({ s, T });
+    if (T > Tmax) { Tmax = T; sMax = s; }
+  }
+  const fin = march(path.L, true);
+  const nodesAsc = fin.nodes.slice().sort((a, b) => a.s - b.s);
+  const TatEntryS = s => {
+    for (let i = 1; i < nodesAsc.length; i++) if (s <= nodesAsc[i].s) {
+      const a = nodesAsc[i - 1], b = nodesAsc[i];
+      return a.T + (b.T - a.T) * (s - a.s) / Math.max(1e-9, b.s - a.s);
+    }
+    return nodesAsc[nodesAsc.length - 1].T;
+  };
+  const pull = { curve, Tmax, sMax, fin, TatEntryS, hk, tau, mu, mua, march };
+  /* ---------- pilot & reaming loads on the drill string ---------- */
+  const DP = { '2.875': { label: '2⅞″ (73 mm)', od: 73.0, w: 15.5 }, '3.5': { label: '3½″ (89 mm)', od: 88.9, w: 19.8 }, '4.5': { label: '4½″ (114 mm)', od: 114.3, w: 24.7 },
+    '5': { label: '5″ (127 mm)', od: 127.0, w: 29.0 }, '5.5': { label: '5½″ (140 mm)', od: 139.7, w: 32.6 }, '6.625': { label: '6⅝″ (168 mm)', od: 168.3, w: 37.5 } };
+  const QR = { 'clay-soft': 100, 'clay-stiff': 250, 'silt': 200, 'sand-loose': 150, 'sand-dense': 300, 'clay-hard': 400, 'clay-spt60': 600, 'sand-spt60': 500, 'gravel': 500, 'rock-soft': 1500, 'rock': 3000, 'custom': 300 };
+  const dp = DP[I.dpSize] || DP['3.5'];
+  const dpD = dp.od / 1000, dpW = dp.w * 1.1;                  // +10% tool joints
+  const wbDP = dpW * (1 - rhoMud / 7850) * G;                  // N/m, buoyed (open-ended)
+  const tauS = 0; // rotating drill string: fluid drag neglected (PRCI drag applies to the product pipe)
+  const qr = (I.qReam > 0 ? I.qReam : (QR[I.soil] || 300)) * I.kHamb * 1000; // Pa
+  const WOB = I.wobT * 1000 * G;
+  // pilot: push from rig to bit located at index iBit
+  function pilotAt(iBit) {
+    let F = WOB, Nsum = 0;
+    for (let i = iBit; i > 0; i--) {
+      const a = pts[i], b = pts[i - 1], dl = a.s - b.s, da = Math.abs(a.a - b.a);
+      const n = Math.abs(wbDP) * Math.abs(Math.cos((a.a + b.a) / 2)) * dl + F * da;
+      Nsum += n;
+      F = F + mu * n + tauS * Math.PI * dpD * dl + wbDP * (a.z - b.z);
+      F = Math.max(F, 0);
+    }
+    return { F, Nsum };
+  }
+  let pilotMax = 0, pilotS = 0, pilotTq = 0;
+  const pilotCurve = [];
+  const Dbit = I.pilotIn * IN;
+  for (let k = 0; k <= 120; k++) {
+    const i = Math.round(k / 120 * (pts.length - 1)), r = pilotAt(i);
+    const tq = mu * r.Nsum * dpD / 2 + WOB * Dbit / 3;
+    pilotCurve.push({ s: pts[i].s, T: r.F });
+    if (r.F > pilotMax) { pilotMax = r.F; pilotS = pts[i].s; }
+    if (tq > pilotTq) pilotTq = tq;
+  }
+  // reaming passes (pull-reaming from exit to entry, full drill string in hole)
+  const passes = [];
+  const step = Math.max(2, I.reamStepIn) * IN;
+  for (let d = C.pilotR * 2; d < C.Dream - 1e-6;) { const dn = Math.min(C.Dream, d + step); passes.push({ d0: d, d: dn }); d = dn; }
+  if (!passes.length) passes.push({ d0: C.pilotR * 2, d: C.Dream });
+  // drag of the whole drill string pulled toward the rig, with a cutting force F0 at the exit end
+  function stringPull(F0) {
+    let F = F0, Nsum = 0;
+    for (let i = pts.length - 1; i > 0; i--) {
+      const a = pts[i], b = pts[i - 1], dl = a.s - b.s, da = Math.abs(a.a - b.a);
+      const n = Math.abs(wbDP) * Math.abs(Math.cos((a.a + b.a) / 2)) * dl + F * da;
+      Nsum += n;
+      F = F + mu * n + tauS * Math.PI * dpD * dl + wbDP * (b.z - a.z);
+    }
+    return { F, Nsum };
+  }
+  passes.forEach(ps => {
+    const R0 = ps.d0 / 2, R1 = ps.d / 2;
+    ps.Fcut = qr * Math.PI * (R1 * R1 - R0 * R0);
+    const sp = stringPull(ps.Fcut);
+    ps.T = sp.F;
+    ps.torque = mu * sp.Nsum * dpD / 2 + 2 * Math.PI / 3 * qr * (R1 ** 3 - R0 ** 3);
+  });
+  const reamMax = Math.max(...passes.map(p => p.T)), reamTq = Math.max(...passes.map(p => p.torque));
+  const phases = [
+    { k: 'pilot', name: 'Pilot (dorong / thrust)', T: pilotMax, note: `bit di ${Math.round(pilotS)} m, WOB ${I.wobT} t` },
+    { k: 'ream', name: `Reaming (tarik), ${passes.length} pass`, T: reamMax, note: `pass terakhir Ø ${Math.round(C.Dream / IN * 10) / 10}″` },
+    { k: 'pull', name: 'Pullback pipa (tarik)', T: Tmax, note: steel ? 'PRCI' : 'ASTM F1962' }
+  ];
+  const gov = phases.reduce((a, b) => b.T > a.T ? b : a);
+  R.ph = { dp, wbDP, qr, WOB, pilotMax, pilotS, pilotTq, pilotCurve, passes, reamMax, reamTq, phases, gov, Tq: Math.max(pilotTq, reamTq) };
+  pull.Tgov = gov.T;
+
+  pull.rigReq = gov.T * I.rigSF;                      // design load of the governing phase
+  pull.derate = I.rigDerate;
+  pull.rigNameplate = pull.rigReq / I.rigDerate;      // minimum rated (brochure) pullback
+  const npT = pull.rigNameplate / G / 1000;
+  const SIZES = [5, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100, 120, 150, 200, 250, 300, 400, 500, 600];
+  pull.rigRecT = SIZES.find(s => s >= npT - 1e-9) || Math.ceil(npT / 50) * 50;
+  pull.rigClass = npT <= 18.1 ? 'Mini (≤ 40.000 lb)' : npT <= 45.4 ? 'Midi (40.000–100.000 lb)' : 'Maxi (> 100.000 lb)';
+  pull.rigCap = I.rigCap * 1000 * G;
+  // stall location for animation
+  pull.sStall = null;
+  for (const c of curve) if (c.T > pull.rigCap) { pull.sStall = c.s; break; }
+  R.pull = pull;
+
+  /* ---------- checks ---------- */
+  const checks = [];
+  const add = (grp, name, val, lim, unit, uc, ref, note, byDesign) => checks.push({ grp, name, val, lim, unit, uc, ok: uc <= 1 + 1e-6, ref, note, byDesign });
+  // geometry
+  add('Geometri', 'Jarak entry tersedia vs dibutuhkan', geo.entryNeed, I.entryMode === 'avail' ? I.entryAvail : geo.entryNeed, 'm', I.entryMode === 'avail' ? geo.entryNeed / I.entryAvail : 1, 'Profil desain', I.entryMode === 'avail' ? '' : 'Mode rekomendasi', I.entryMode !== 'avail');
+  add('Geometri', 'Jarak exit tersedia vs dibutuhkan', geo.exitNeed, I.exitMode === 'avail' ? I.exitAvail : geo.exitNeed, 'm', I.exitMode === 'avail' ? geo.exitNeed / I.exitAvail : 1, 'Profil desain', I.exitMode === 'avail' ? '' : 'Mode rekomendasi', I.exitMode !== 'avail');
+  add('Geometri', 'Cover minimum di bawah ' + (river ? 'dasar sungai' : 'permukaan jalan'), geo.minCover, I.cover, 'm', I.cover / Math.max(geo.minCover, 1e-6), 'Input cover / izin crossing', '', true);
+  add('Geometri', 'Radius lengkung vs minimum', Math.min(geo.R1, geo.R2), Rr.min, 'm', Rr.min / Math.min(geo.R1, geo.R2), steel ? 'Natural bend E·D/(2σb)' : 'PPI Ch.12 (long-term bend)', '', I.rMode === 'auto');
+  const rigUC = pull.rigNameplate / pull.rigCap;
+  add('Kapasitas rig', `Thrust/pull rig ≥ ${I.rigSF.toFixed(1).replace('.', ',')} × beban terbesar ÷ ${Math.round(I.rigDerate * 100)}%`, I.rigCap, pull.rigNameplate / G / 1000, 't', rigUC, 'SF 1,5–2 + derating kerja kontinu', `Nilai = rig diinput, batas = tonase minimum. Fase penentu: ${R.ph.gov.name}`);
+  if (I.rigTorque > 0) add('Kapasitas rig', `Torsi rig ≥ ${I.rigSF.toFixed(1).replace('.', ',')} × torsi terbesar`, I.rigTorque, R.ph.Tq * I.rigSF / 1000, 'kN·m', R.ph.Tq * I.rigSF / 1000 / I.rigTorque, 'Estimasi torsi string + bit/reamer', 'Nilai = torsi rig, batas = kebutuhan');
+
+  if (steel) {
+    const S = P.SMYS, E = P.E, D = P.D * 1000, t = P.t * 1000;
+    const smysPsi = S * 145.0377;
+    const Dt = D / t;
+    let Fb;
+    if (Dt <= 1.5e6 / smysPsi) Fb = .75 * S;
+    else if (Dt <= 3e6 / smysPsi) Fb = (.84 - 1.74 * S * D / (E * t)) * S;
+    else Fb = (.72 - .58 * S * D / (E * t)) * S;
+    const Fhe = .88 * E * (t / D) ** 2;
+    let Fhc;
+    if (Fhe <= .55 * S) Fhc = Fhe;
+    else if (Fhe <= 1.6 * S) Fhc = .45 * S + .18 * Fhe;
+    else if (Fhe <= 6.2 * S) Fhc = 1.31 * S / (1.15 + S / Fhe);
+    else Fhc = S;
+    const inst = { Fb, Fhe, Fhc, Ft: .9 * S, pts: [] };
+    let mx = { ft: 0, fb: 0, fh: 0, uc1: 0, uc2: 0, ucT: 0, ucB: 0, ucH: 0 };
+    for (const p of pts) {
+      const T = TatEntryS(p.s);
+      const ft = T / (P.As * 1e6);
+      const fb = isFinite(p.R) ? E * D / (2 * p.R * 1000) : 0;
+      const dep = -p.z;
+      const pe = rhoMud * G * dep - (I.ballast === 'water' ? 1000 * G * dep : 0);
+      const fh = Math.max(0, pe) * 1e-6 * D / (2 * t);
+      const uc1 = ft / (.9 * S) + fb / Fb;
+      const A = (ft + fb - .5 * fh) * 1.25 / S, B = 1.5 * fh / Fhc;
+      const uc2 = A * A + B * B + 2 * P.nu * Math.abs(A) * B;
+      inst.pts.push({ s: p.s, ft, fb, fh, uc1, uc2 });
+      const upd = (k, v) => { if (v > mx[k]) { mx[k] = v; mx[k + 'S'] = p.s; } };
+      upd('ft', ft); upd('fb', fb); upd('fh', fh); upd('uc1', uc1); upd('uc2', uc2);
+    }
+    inst.mx = mx; R.inst = inst;
+    add('Instalasi (PRCI)', 'Tegangan tarik ft ≤ 0,9 SMYS', mx.ft, .9 * S, 'MPa', mx.ft / (.9 * S), 'PRCI Eq. ft = T/A');
+    add('Instalasi (PRCI)', 'Tegangan bending fb ≤ Fb', mx.fb, Fb, 'MPa', mx.fb / Fb, 'PRCI (Fb fungsi D/t)');
+    add('Instalasi (PRCI)', 'Hoop eksternal fh ≤ Fhc/1,5', mx.fh, Fhc / 1.5, 'MPa', mx.fh / (Fhc / 1.5), 'PRCI hoop buckling');
+    add('Instalasi (PRCI)', 'Unity check tarik + bending', mx.uc1, 1, '–', mx.uc1, 'ft/0,9S + fb/Fb ≤ 1');
+    add('Instalasi (PRCI)', 'Unity check tarik + bending + hoop', mx.uc2, 1, '–', mx.uc2, 'A² + B² + 2ν|A|B ≤ 1');
+
+    // operating & hydrotest
+    const loc = LOC[I.loc];
+    const Pd = I.dp / 10; // MPa
+    const htF = I.htF > 0 ? I.htF : loc.test;
+    const Ph = Pd * htF;
+    if (htF < loc.test - 1e-9) R.warn.push(`Faktor hydrotest ${htF.toFixed(2).replace('.', ',')} × DP lebih kecil dari minimum ASME B31.8 Tabel 841.3.2-1 untuk ${loc.label} (${loc.test.toFixed(2).replace('.', ',')} × DP).`);
+    const tN = t, tC = t - P.CA * 1000;
+    const fbMax = E * D / (2 * Math.min(geo.R1, geo.R2) * 1000);
+    const op = { loc, Pd, Ph, tC, fbMax };
+    op.treq = Pd * D / (2 * S * loc.F) + P.CA * 1000;
+    op.MAOP = 2 * S * tN * loc.F / D * 10; // bar
+    op.ShDesign = Pd * D / (2 * tN);
+    const combo = (Pmpa, tt, T1, T2) => {
+      const Sh = Pmpa * D / (2 * tt);
+      const ST = E * P.alpha * (T1 - T2);
+      const out = { Sh, ST, cases: [] };
+      for (const sgn of [1, -1]) {
+        const SL = .3 * Sh + ST + sgn * fbMax;
+        const tres = Math.max(Math.abs(Sh - SL), Math.abs(Sh), Math.abs(SL));
+        const vm = Math.sqrt(Sh * Sh - Sh * SL + SL * SL);
+        out.cases.push({ SL, tres, vm, fv: Math.abs(Sh - SL) / 2 });
+      }
+      out.SL = out.cases.reduce((a, c) => Math.abs(c.SL) > Math.abs(a) ? c.SL : a, 0);
+      out.tres = Math.max(...out.cases.map(c => c.tres));
+      out.vm = Math.max(...out.cases.map(c => c.vm));
+      out.fv = Math.max(...out.cases.map(c => c.fv));
+      return out;
+    };
+    op.ht = combo(Ph, tN, I.tInst, I.tInst);
+    op.opr = combo(Pd, tC, I.tInst, I.tOp);
+    R.op = op;
+    add('Desain (B31.8)', `Tebal dinding ≥ t perlu (F = ${loc.F.toFixed(2).replace('.', ',')})`, tN, op.treq, 'mm', op.treq / tN, 'ASME B31.8 §841.1.1');
+    add('Hydrotest', `Hoop saat uji ${htF.toFixed(2).replace('.', ',')} × DP ≤ 100% SMYS`, op.ht.Sh, S, 'MPa', op.ht.Sh / S, 'ASME B31.8 §841.3', 'Ikuti batas spesifikasi proyek (mis. 90–95%)');
+    add('Hydrotest', 'Combined (Tresca) ≤ 0,9 SMYS', op.ht.tres, .9 * S, 'MPa', op.ht.tres / (.9 * S), 'ASME B31.8 §833.4');
+    add('Operasi', 'Longitudinal |SL| ≤ 0,9 SMYS (terkorosi)', Math.abs(op.opr.SL), .9 * S, 'MPa', Math.abs(op.opr.SL) / (.9 * S), 'ASME B31.8 §833.3');
+    add('Operasi', 'Combined (Tresca) ≤ 0,9 SMYS (terkorosi)', op.opr.tres, .9 * S, 'MPa', op.opr.tres / (.9 * S), 'ASME B31.8 §833.4');
+    add('Operasi', 'Max shear ≤ 0,45 SMYS', op.opr.fv, .45 * S, 'MPa', op.opr.fv / (.45 * S), 'PRCI (operasi)');
+
+    // natural bend & spans
+    const nb = {};
+    nb.Rel = Rr.elastic; nb.angJoint = deg(I.joint / Rr.elastic); nb.angJointDesign = deg(I.joint / Math.min(geo.R1, geo.R2));
+    const sa = I.bendFrac * S * 1e6;
+    nb.spanEmpty = Math.sqrt(10 * P.Z * sa / (P.wa * G));
+    nb.spanFull = Math.sqrt(10 * P.Z * sa / ((P.wa + P.wWater) * G));
+    R.nb = nb;
+  } else {
+    // PE checks (ASTM F1962 / PPI)
+    const fT = timeFactor(C.pullHours), fTemp = tempFactor(I.peTemp);
+    const sAllow = .4 * fT * fTemp * P.sy;           // MPa safe pull stress
+    const SPS = sAllow * P.As * 1e6;                  // N
+    const Tbreak = fT * fTemp * P.sy * P.As * 1e6;    // N  (yield → necking/putus)
+    const pe = { fT, fTemp, sAllow, SPS, Tbreak };
+    pe.sTmax = Tmax / (P.As * 1e6);
+    pe.sSps = null; pe.sBreak = null;
+    for (const c of curve) { if (pe.sSps == null && c.T > SPS) pe.sSps = c.s; if (pe.sBreak == null && c.T > Tbreak) pe.sBreak = c.s; }
+    // elongation
+    let el = 0;
+    for (let i = 1; i < nodesAsc.length; i++) { const a = nodesAsc[i - 1], b = nodesAsc[i]; el += (a.T + b.T) / 2 * (b.s - a.s); }
+    pe.elong = el / (P.E * 1e6 * P.As);
+    // collapse during installation
+    const ov = I.ovality / 100;
+    pe.fo = ((1 - ov) / (1 + ov) ** 2) ** 3;
+    const r = pe.sTmax / (2 * sAllow);
+    const fr2 = 5.57 - (r + 1.09) ** 2;
+    pe.fR = fr2 > 0 ? Math.max(0, Math.sqrt(fr2) - 1.09) : 0;
+    pe.Pcr = 2 * P.E / (1 - P.nu ** 2) * (1 / (P.SDR - 1)) ** 3 * pe.fo * pe.fR; // MPa
+    const depMax = Dd;
+    pe.Pext = (rhoMud * G * depMax + I.hkKpa * 1000 - (I.ballast === 'water' ? 1000 * G * depMax : 0)) / 1e6;
+    pe.PcrLT = 2 * P.El / (1 - P.nu ** 2) * (1 / (P.SDR - 1)) ** 3 * pe.fo;
+    const wtrHead = river ? (waterLvl - zc) : Dd;
+    pe.PextLT = 1000 * G * wtrHead / 1e6;
+    pe.MOP = 20 * P.mat.mrs / (I.peC * (P.SDR - 1));
+    pe.htF = I.peHtF > 0 ? I.peHtF : 1.1;
+    pe.Ptest = I.peDP * pe.htF;                                   // bar
+    pe.sTest = pe.Ptest / 10 * (P.SDR - 1) / 2;                   // MPa hoop stress during test
+    pe.PtestMax = 1.5 * pe.MOP;
+    R.pe = pe;
+    add('Instalasi (F1962)', 'Pull load ≤ Safe Pull Strength', Tmax / G / 1000, SPS / G / 1000, 't', Tmax / SPS, 'ASTM F1962 / PPI Ch.12');
+    add('Instalasi (F1962)', 'Pull load < batas putus/yield pipa', Tmax / G / 1000, Tbreak / G / 1000, 't', Tmax / Tbreak, 'σy × fT × fsuhu × A');
+    add('Instalasi (F1962)', `Collapse saat instalasi (SF ${I.peSF.toFixed(1).replace('.', ',')})`, pe.Pext * 1000, pe.Pcr / I.peSF * 1000, 'kPa', pe.Pext / (pe.Pcr / I.peSF), 'ASTM F1962 (f_o, f_R)');
+    add('Jangka panjang', `Buckling tekanan air tanah (SF ${I.peSF.toFixed(1).replace('.', ',')})`, pe.PextLT * 1000, pe.PcrLT / I.peSF * 1000, 'kPa', pe.PextLT / (pe.PcrLT / I.peSF), 'ASTM F1962 / PPI (E jangka panjang)');
+    add('Desain (ISO 4437)', `Tekanan desain ≤ MOP (C = ${I.peC.toFixed(1).replace('.', ',')})`, I.peDP, pe.MOP, 'bar', I.peDP / pe.MOP, 'ISO 4437: MOP = 20·MRS/(C·(SDR−1))');
+    add('Pneumatic test', `Tekanan uji pneumatik ${pe.htF.toFixed(2).replace('.', ',')} × DP ≤ 1,5 × MOP pipa`, pe.Ptest, pe.PtestMax, 'bar', pe.Ptest / pe.PtestMax, 'Batas umum uji PE (EN 12007 / spesifikasi proyek)', `Media udara/nitrogen · hoop saat uji ${pe.sTest.toFixed(2).replace('.', ',')} MPa`);
+    if (pull.rigCap > SPS) R.info.push(`Kapasitas rig (${I.rigCap} t) melebihi Safe Pull Strength pipa (${(SPS / G / 1000).toFixed(1).replace('.', ',')} t): pasang weak link / breakaway swivel ≤ SPS.`);
+  }
+
+  /* ---------- hydrofracture (Delft) ---------- */
+  const so = getSoil(I);
+  const fp = [];
+  let worst = 0, worstS = 0, failAt = [];
+  const sinp = Math.sin(rad(so.phi)), cosp = Math.cos(rad(so.phi));
+  for (const p of pts) {
+    const surf = geo.zSurf(p.x);
+    const Hs = surf - p.z;
+    const wd = geo.waterDepth(p.x);
+    const preq = (rhoMud * G * (-p.z)) / 1000 + I.annGrad / 100 * p.s; // kPa
+    if (Hs < .5 || so.rock) { fp.push({ s: p.s, x: p.x, preq, pmax: null }); continue; }
+    const gw = 9.81;
+    const sig = (so.gsat - gw) * Hs, u = gw * (Hs + wd);
+    const Rp = Math.max(so.k * Hs, C.pilotR * 1.01), Ro = C.pilotR;
+    let pmax;
+    if (so.phi < .1) {
+      pmax = u + sig + so.c * (1 + Math.log(1 / ((Ro / Rp) ** 2 + so.c / so.G)));
+    } else {
+      const ccot = so.c / Math.tan(rad(so.phi));
+      const Pf = sig * (1 + sinp) + so.c * cosp;
+      const Q = (sig * sinp + so.c * cosp) / so.G;
+      pmax = (Pf + ccot) * Math.pow((Ro / Rp) ** 2 + Q, -sinp / (1 + sinp)) - ccot + u;
+    }
+    const ratio = preq / (pmax / I.fracSF);
+    fp.push({ s: p.s, x: p.x, preq, pmax, ratio });
+    if (ratio > worst) { worst = ratio; worstS = p.s; }
+    if (ratio > 1 && Hs > 1.5) failAt.push(p.s);
+  }
+  R.frac = { pts: fp, worst, worstS, failAt, soil: so };
+  if (so.rock) {
+    R.info.push('Batuan keras: metode Delft (cavity expansion) tidak berlaku. Risiko frac-out di batuan ditentukan oleh rekahan/kekar dan lapisan tanah penutup; evaluasi dengan data geoteknik. Untuk batuan keras perlu mud motor / PDC bit dan torsi rig besar.');
+    add('Hydrofracture (Delft)', 'Tidak berlaku untuk batuan keras', 0, 1, '–', 0, 'Evaluasi terpisah (rekahan/kekar)', 'Cek lapisan tanah penutup di atas batuan dan zona entry/exit');
+  } else {
+    add('Hydrofracture (Delft)', `P lumpur ≤ Pmax/${I.fracSF.toFixed(1).replace('.', ',')}`, worst, 1, '–', worst, 'Delft cavity expansion (screening)', 'Rasio maksimum; abaikan zona < 1,5 m dari permukaan');
+  }
+
+  R.checks = checks;
+  R.allOk = checks.every(c => c.ok);
+  return R;
+}
+
+return { calc, getSoil, STEEL, GRADES, LOC, PE_OD, PE_SDR, PE_MAT, SOILS, pathPoint, G, PSI, IN, rad, deg, timeFactor, tempFactor };
+})();
+
+
+</script>
+<script>
+const HV_W=[278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584,761,556,556,222,556,333,1000,556,556,333,1000,667,333,1000,556,611,556,556,222,222,333,333,350,556,1000,333,1000,500,333,944,556,500,667,278,333,556,556,556,556,260,556,333,737,370,556,584,333,737,333,400,584,333,333,333,556,537,278,333,333,365,556,834,834,834,611,667,667,667,667,667,667,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,500,556,556,556,556,278,278,278,278,556,556,556,556,556,556,556,584,611,556,556,556,556,500,556,500];
+const HVB_W=[278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584,761,556,556,278,556,500,1000,556,556,333,1000,667,333,1000,556,611,556,556,278,278,500,500,350,556,1000,333,1000,556,333,944,556,500,667,278,333,556,556,556,556,280,556,333,737,370,556,584,333,737,333,400,584,333,333,333,611,556,278,333,333,365,556,834,834,834,611,722,722,722,722,722,722,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,556,556,556,556,556,278,278,278,278,611,611,611,611,611,611,611,584,611,611,611,611,611,556,611,556];
+/* ==== Minimal PDF writer: Helvetica (WinAnsi), lines, rects, JPEG images. No external library. ==== */
+const PDFW = (() => {
+'use strict';
+const CP = { '€': 128, '‚': 130, 'ƒ': 131, '„': 132, '…': 133, '†': 134, '‡': 135, 'ˆ': 136, '‰': 137, 'Š': 138, '‹': 139, 'Œ': 140, 'Ž': 142, '‘': 145, '’': 146, '“': 147, '”': 148, '•': 149, '–': 150, '—': 151, '˜': 152, '™': 153, 'š': 154, '›': 155, 'œ': 156, 'ž': 158, 'Ÿ': 159 };
+const SUB = { '≤': '<=', '≥': '>=', 'σ': 's', 'μ': 'µ', 'ν': 'v', 'φ': 'phi', 'α': 'a', '→': '->', '←': '<-', '″': '"', '′': "'", '⁻': '-', '⁸': '8', '⁴': '4', '⁶': '6', '⁰': '0', '↑': '^', '≈': '~', 'Σ': 'Sum', '√': 'sqrt', 'ₘ': 'm', '₁': '1', '₂': '2', '−': '-', 'Δ': 'd', 'θ': 'th', 'τ': 'tau', 'ρ': 'rho', 'γ': 'g', ' ': ' ', ' ': ' ', ' ': ' ' };
+function code(ch) {
+  const c = ch.codePointAt(0);
+  if (c >= 32 && c < 127) return c;
+  if (c >= 160 && c <= 255) return c;
+  if (CP[ch]) return CP[ch];
+  if (c === 9 || c === 10 || c === 13) return 32;
+  return 63;
+}
+function enc(str) {
+  const out = [];
+  for (const ch of String(str)) {
+    const s = SUB[ch];
+    if (s !== undefined) { for (const c2 of s) out.push(code(c2)); continue; }
+    out.push(code(ch));
+  }
+  return out;
+}
+function esc(bytes) {
+  let s = '';
+  for (const c of bytes) {
+    if (c === 40 || c === 41 || c === 92) s += '\\' + String.fromCharCode(c);
+    else if (c > 126 || c < 32) s += '\\' + c.toString(8).padStart(3, '0');
+    else s += String.fromCharCode(c);
+  }
+  return s;
+}
+const ascii = s => { const u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i) & 255; return u; };
+
+class Doc {
+  constructor() { this.W = 595.28; this.H = 841.89; this.k = 72 / 25.4; this.pages = []; this.imgs = []; this.p = null; }
+  addPage() { this.p = { ops: [] }; this.pages.push(this.p); return this.p; }
+  X(mm) { return (mm * this.k).toFixed(2); }
+  Y(mm) { return (this.H - mm * this.k).toFixed(2); }
+  rgb(c) { return c.map(v => (v / 255).toFixed(3)).join(' '); }
+  tw(str, size, bold) {
+    const W = bold ? HVB_W : HV_W; let s = 0;
+    for (const b of enc(str)) s += W[b - 32] || 556;
+    return s / 1000 * size / this.k;
+  }
+  text(str, x, y, o = {}) {
+    const size = o.size || 9;
+    let xx = x;
+    if (o.align === 'right') xx = x - this.tw(str, size, o.bold);
+    else if (o.align === 'center') xx = x - this.tw(str, size, o.bold) / 2;
+    this.p.ops.push(`BT /${o.bold ? 'F2' : 'F1'} ${size} Tf ${this.rgb(o.color || [20, 32, 43])} rg ${this.X(xx)} ${this.Y(y)} Td (${esc(enc(str))}) Tj ET`);
+  }
+  rect(x, y, w, h, o = {}) {
+    const op = [];
+    if (o.fill) op.push(`${this.rgb(o.fill)} rg`);
+    if (o.stroke) op.push(`${this.rgb(o.stroke)} RG ${((o.lw || .3) * this.k).toFixed(2)} w`);
+    op.push(`${this.X(x)} ${this.Y(y + h)} ${(w * this.k).toFixed(2)} ${(h * this.k).toFixed(2)} re ${o.fill && o.stroke ? 'B' : o.fill ? 'f' : 'S'}`);
+    this.p.ops.push('q ' + op.join(' ') + ' Q');
+  }
+  line(x1, y1, x2, y2, o = {}) {
+    this.p.ops.push(`q ${this.rgb(o.color || [200, 209, 216])} RG ${((o.lw || .3) * this.k).toFixed(2)} w ${this.X(x1)} ${this.Y(y1)} m ${this.X(x2)} ${this.Y(y2)} l S Q`);
+  }
+  addJpeg(bytes, w, h) { this.imgs.push({ bytes, w, h }); return this.imgs.length; }
+  image(n, x, y, w, h) { this.p.ops.push(`q ${(w * this.k).toFixed(2)} 0 0 ${(h * this.k).toFixed(2)} ${this.X(x)} ${this.Y(y + h)} cm /Im${n} Do Q`); }
+  output(meta = {}) {
+    const chunks = []; let off = 0; const offs = [];
+    const push = s => { const u = typeof s === 'string' ? ascii(s) : s; chunks.push(u); off += u.length; };
+    const obj = (n, body) => { offs[n] = off; push(`${n} 0 obj\n`); push(body); push('\nendobj\n'); };
+    const stream = (n, dict, bytes) => { offs[n] = off; push(`${n} 0 obj\n<< ${dict} /Length ${bytes.length} >>\nstream\n`); push(bytes); push('\nendstream\nendobj\n'); };
+    push('%PDF-1.4\n'); push(new Uint8Array([37, 226, 227, 207, 211, 10]));
+    const nImg = this.imgs.length, first = 6 + nImg, nPg = this.pages.length;
+    const kids = this.pages.map((_, i) => `${first + i * 2} 0 R`).join(' ');
+    obj(1, '<< /Type /Catalog /Pages 2 0 R >>');
+    obj(2, `<< /Type /Pages /Kids [${kids}] /Count ${nPg} >>`);
+    obj(3, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
+    obj(4, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
+    const pstr = s => '(' + esc(enc(String(s || '').replace(/[–—]/g, '-'))) + ')';
+    obj(5, `<< /Title ${pstr(meta.title)} /Author ${pstr(meta.author)} /Subject ${pstr(meta.subject)} /Creator (Simulator HDD Crossing) /Producer (Simulator HDD Crossing) >>`);
+    this.imgs.forEach((im, i) => stream(6 + i, `/Type /XObject /Subtype /Image /Width ${im.w} /Height ${im.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode`, im.bytes));
+    const xo = this.imgs.map((_, i) => `/Im${i + 1} ${6 + i} 0 R`).join(' ');
+    this.pages.forEach((pg, i) => {
+      const n = first + i * 2;
+      obj(n, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${this.W} ${this.H}] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> ${xo ? `/XObject << ${xo} >>` : ''} >> /Contents ${n + 1} 0 R >>`);
+      stream(n + 1, '', ascii(pg.ops.join('\n')));
+    });
+    const N = first + nPg * 2;
+    const xref = off;
+    let x = `xref\n0 ${N}\n0000000000 65535 f \n`;
+    for (let i = 1; i < N; i++) x += String(offs[i]).padStart(10, '0') + ' 00000 n \n';
+    push(x);
+    push(`trailer\n<< /Size ${N} /Root 1 0 R /Info 5 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+    const out = new Uint8Array(off); let p = 0;
+    for (const c of chunks) { out.set(c, p); p += c.length; }
+    return out;
+  }
+}
+return { Doc, enc };
+})();
+
+</script>
+<script>
+/* ==== UI: inputs, results, charts, animation ==== */
+(() => {
+'use strict';
+const H = HDD, G = H.G;
+const $ = id => document.getElementById(id);
+const nf = (v, d = 1) => (v == null || !isFinite(v)) ? '–' : Number(v).toLocaleString('id-ID', { minimumFractionDigits: d, maximumFractionDigits: d });
+const tf = N => N / G / 1000;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+/* ---------- populate selects ---------- */
+const npsSel = $('nps');
+Object.keys(H.STEEL).map(Number).sort((a, b) => a - b).forEach(k => {
+  const v = H.STEEL[k];
+  npsSel.add(new Option(`NPS ${k} (DN${v.dn}) · OD ${nf(v.od * 25.4, 1)} mm`, String(k)));
+});
+npsSel.value = '4';
+function fillSch() {
+  const d = H.STEEL[npsSel.value], sel = $('sch'), cur = sel.value;
+  sel.innerHTML = '';
+  d.s.forEach(([l, w]) => sel.add(new Option(`Sch ${l} · ${nf(w * 25.4, 2)} mm`, l)));
+  sel.add(new Option('Custom (isi tebal)', 'custom'));
+  if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
+  else sel.value = (d.s.find(x => x[0].includes('STD')) || d.s[0])[0];
+}
+fillSch();
+H.GRADES.forEach(g => $('grade').add(new Option(`${g[1]} · SMYS ${g[2]} MPa`, g[0])));
+$('grade').value = 'X52';
+Object.entries(H.LOC).forEach(([k, v]) => $('loc').add(new Option(`${v.label} · F ${nf(v.F, 2)}`, k)));
+$('loc').value = '4';
+H.PE_OD.forEach(d => $('peOD').add(new Option(`${d} mm`, String(d))));
+$('peOD').value = '160';
+H.PE_SDR.forEach(s => $('sdr').add(new Option(`SDR ${nf(s, s % 1 ? 1 : 0)}`, String(s))));
+$('sdr').value = '11';
+Object.entries(H.PE_MAT).forEach(([k, v]) => $('peMat').add(new Option(v.label, k)));
+$('peMat').value = 'PE100';
+Object.entries(H.SOILS).forEach(([k, v]) => $('soil').add(new Option(v.label, k)));
+$('soil').value = 'clay-stiff';
+
+/* ---------- per-crossing presets ---------- */
+const memo = {
+  river: { crossName: 'Sungai Belumai', W: 100, cover: 5 },
+  road: { crossName: 'Jalan Nasional', W: 30, cover: 3 }
+};
+let curCross = 'river';
+function crossUI() {
+  const c = document.querySelector('input[name=cross]:checked').value;
+  if (c !== curCross) {
+    memo[curCross] = { crossName: $('crossName').value, W: $('W').value, cover: $('cover').value };
+    Object.entries(memo[c]).forEach(([k, v]) => $(k).value = v);
+    curCross = c;
+  }
+  const river = c === 'river';
+  $('rowRiverDepth').hidden = !river;
+  soilUI();
+  $('lblW').innerHTML = river ? 'Lebar sungai (tepi–tepi)<small>m</small>' : 'Lebar jalan / ROW<small>m, termasuk bahu &amp; saluran</small>';
+  $('lblCover').innerHTML = river ? 'Cover minimum di bawah dasar sungai<small>m, ke top of pipe</small>' : 'Cover minimum di bawah permukaan jalan<small>m, ke top of pipe</small>';
+}
+function soilUI() {
+  const k = $('soil').value, s = H.getSoil({ soil: k, soilC: num('soilC', 50), soilPhi: num('soilPhi', 0), soilG: num('soilG', 15), soilGam: num('soilGam', 19) });
+  $('grpSoil').hidden = k !== 'custom';
+  $('soilHint').textContent = s.rock ? 'Batuan keras: hydrofracture Delft tidak dihitung. Naikkan μ bila perlu dan pastikan torsi rig cukup.'
+    : k === 'custom' ? 'Isi dari hasil bor/SPT dan uji lab. Lempung: c ≈ Su, φ = 0. Pasir/kerikil: c = 0, φ dari SPT.'
+    : `Dipakai: c = ${s.c} kPa · φ = ${s.phi}° · G = ${nf(s.G / 1000, 0)} MPa · γsat = ${nf(s.gsat, 1)} kN/m³${s.note ? ' (' + s.note + ')' : ''}. Untuk N-SPT ≥ 60 naikkan juga μ ke ±0,4.`.replace('. Untuk N-SPT ≥ 60 naikkan juga μ ke ±0,4.', s.note ? '. Naikkan juga μ ke ±0,4.' : '');
+}
+function htUI() {
+  const l = H.LOC[$('loc').value];
+  $('htHint').textContent = `× tekanan desain (min. B31.8 ${l.label}: ${nf(l.test, 2)})`;
+}
+function matUI() {
+  htUI();
+  const pe = document.querySelector('input[name=mat]:checked').value === 'pe';
+  $('grpSteel').hidden = pe; $('grpPE').hidden = !pe;
+  $('rowDrag').hidden = pe; $('rowHk').hidden = !pe;
+  $('rowWt').hidden = pe || $('sch').value !== 'custom';
+  $('rowSpeed').hidden = $('durMode').value !== 'auto';
+  $('rowDur').hidden = $('durMode').value === 'auto';
+  $('rowR').hidden = $('rMode').value === 'auto';
+  $('rowEntryAvail').hidden = $('entryMode').value === 'auto';
+  $('rowExitAvail').hidden = $('exitMode').value === 'auto';
+}
+
+/* ---------- unit-switchable inputs (stored internally as mm, barg, °C) ---------- */
+const PSI_PER_BAR = 14.5037738;
+const UNITS = {
+  ca: { u: 'caU', to: { in: v => v * 25.4, mm: v => v }, from: { in: v => v / 25.4, mm: v => v }, dec: { in: 4, mm: 4 }, lbl: { in: 'inch', mm: 'mm' } },
+  dp: { u: 'dpU', to: { barg: v => v, psig: v => v / PSI_PER_BAR }, from: { barg: v => v, psig: v => v * PSI_PER_BAR }, dec: { barg: 3, psig: 2 }, lbl: { barg: 'barg', psig: 'psig' } },
+  peDP: { u: 'peDPU', to: { barg: v => v, psig: v => v / PSI_PER_BAR }, from: { barg: v => v, psig: v => v * PSI_PER_BAR }, dec: { barg: 3, psig: 2 }, lbl: { barg: 'barg', psig: 'psig' } },
+  tInst: { u: 'tInstU', to: { C: v => v, F: v => (v - 32) * 5 / 9 }, from: { C: v => v, F: v => v * 9 / 5 + 32 }, dec: { C: 2, F: 2 }, lbl: { C: '°C', F: '°F' } },
+  tOp: { u: 'tOpU', to: { C: v => v, F: v => (v - 32) * 5 / 9 }, from: { C: v => v, F: v => v * 9 / 5 + 32 }, dec: { C: 2, F: 2 }, lbl: { C: '°C', F: '°F' } },
+  peTemp: { u: 'peTempU', to: { C: v => v, F: v => (v - 32) * 5 / 9 }, from: { C: v => v, F: v => v * 9 / 5 + 32 }, dec: { C: 2, F: 2 }, lbl: { C: '°C', F: '°F' } }
+};
+Object.entries(UNITS).forEach(([id, d]) => {
+  const sel = $(d.u); sel.dataset.prev = sel.value;
+  sel.addEventListener('change', () => {
+    const v = parseFloat($(id).value), old = sel.dataset.prev, nw = sel.value;
+    if (isFinite(v)) $(id).value = String(+d.from[nw](d.to[old](v)).toFixed(d.dec[nw]));
+    sel.dataset.prev = nw;
+  });
+});
+function base(id, defBase) {
+  const d = UNITS[id], v = parseFloat($(id).value);
+  return isFinite(v) ? d.to[$(d.u).value](v) : defBase;
+}
+const unitOf = id => UNITS[id] ? UNITS[id].lbl[$(UNITS[id].u).value] : '';
+function num(id, def) { const v = parseFloat($(id).value); return isFinite(v) ? v : def; }
+function read() {
+  return {
+    cross: document.querySelector('input[name=cross]:checked').value, name: $('crossName').value.trim() || 'Crossing',
+    W: Math.max(1, num('W', 100)), riverDepth: Math.max(.1, num('riverDepth', 6)), cover: Math.max(.3, num('cover', 4)), margin: Math.max(0, num('margin', 10)),
+    mat: document.querySelector('input[name=mat]:checked').value,
+    nps: npsSel.value, sch: $('sch').value, wtCustom: Math.max(1, num('wtCustom', 6.4)), grade: $('grade').value,
+    coatT: Math.max(0, num('coatT', 2.5)), coatRho: Math.max(0, num('coatRho', 940)), ca: Math.max(0, base('ca', 1.5875)),
+    dp: Math.max(0, base('dp', 40)), loc: $('loc').value, htF: Math.max(1, num('htF', 1.5)), tInst: base('tInst', 30), tOp: base('tOp', 55),
+    bendFrac: clamp(num('bendFrac', 40), 5, 95) / 100, joint: Math.max(1, num('joint', 12)),
+    peOD: +$('peOD').value, sdr: +$('sdr').value, peMat: $('peMat').value, peSy: Math.max(5, num('peSy', 22)),
+    peDP: Math.max(0, base('peDP', 4)), peC: Math.max(1, num('peC', 2)), peHtF: Math.max(1, num('peHtF', 1.1)), peTemp: base('peTemp', 30), ovality: Math.max(0, num('ovality', 3)), peSF: Math.max(1, num('peSF', 2)),
+    durMode: $('durMode').value, durH: Math.max(.1, num('durH', 6)), pullSpeed: Math.max(.05, num('pullSpeed', 3)),
+    angEntry: clamp(num('angEntry', 10), 2, 30), angExit: clamp(num('angExit', 8), 2, 30), rMode: $('rMode').value, rManual: Math.max(2, num('rManual', 200)), rRod: Math.max(0, num('rRod', 0)),
+    entryMode: $('entryMode').value, entryAvail: Math.max(1, num('entryAvail', 80)), exitMode: $('exitMode').value, exitAvail: Math.max(1, num('exitAvail', 80)),
+    mudSG: clamp(num('mudSG', 1.2), .9, 2.2), muSoil: Math.max(0, num('muSoil', .3)), dragPsi: Math.max(0, num('dragPsi', .05)), hkKpa: Math.max(0, num('hkKpa', 69)),
+    muAbove: +$('muAbove').value, ballast: $('ballast').value, soil: $('soil').value, soilC: num('soilC', 50), soilPhi: num('soilPhi', 0), soilG: num('soilG', 15), soilGam: num('soilGam', 19), annGrad: Math.max(0, num('annGrad', 5)), dpSize: $('dpSize').value, wobT: Math.max(0, num('wobT', 2)), reamStepIn: Math.max(2, num('reamStep', 8)), qReam: Math.max(0, num('qReam', 0)), rigTorque: Math.max(0, num('rigTorque', 0)), pilotIn: Math.max(1, num('pilotIn', 9.875)),
+    fracSF: Math.max(1, num('fracSF', 2)), rigCap: Math.max(.1, num('rigCap', 20)), rigSF: Math.max(1, num('rigSF', 1.5)), rigDerate: clamp(num('rigDerate', 80), 30, 100) / 100, kHamb: num('kHamb', 1)
+  };
+}
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+/* ---------- charts ---------- */
+function niceStep(range, n) {
+  const raw = range / n, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p;
+  return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * p;
+}
+function lineChart(el, o) {
+  const W = 720, Hh = 270, m = { l: 58, r: 20, t: 22, b: 42 };
+  const vals = o.series.flatMap(s => s.ys.filter(v => v != null && isFinite(v)));
+  const smax = Math.max(...vals, 1e-9);
+  const hmax = Math.max(0, ...(o.hl || []).map(h => h.y));
+  let ymax = o.ymax != null ? o.ymax : Math.max(smax * 1.15, Math.min(hmax * 1.1, smax * 2.6));
+  const ymin = o.ymin || 0;
+  if (!(ymax > ymin)) ymax = ymin + 1;
+  const xmax = o.xmax;
+  const sx = x => m.l + x / xmax * (W - m.l - m.r);
+  const sy = y => Hh - m.b - (y - ymin) / (ymax - ymin) * (Hh - m.t - m.b);
+  const cid = 'c' + Math.random().toString(36).slice(2, 8);
+  let s = `<svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${esc(o.aria || '')}"><defs><clipPath id="${cid}"><rect x="${m.l}" y="${m.t - 2}" width="${W - m.l - m.r}" height="${Hh - m.t - m.b + 2}"/></clipPath></defs>`;
+  const ys = niceStep(ymax - ymin, 5), xs = niceStep(xmax, 7);
+  for (let y = ymin; y <= ymax + 1e-9; y += ys) s += `<line class="gr" x1="${m.l}" x2="${W - m.r}" y1="${sy(y)}" y2="${sy(y)}"/><text x="${m.l - 8}" y="${sy(y) + 4}" text-anchor="end">${nf(y, ys < 1 ? (ys < .1 ? 2 : 1) : 0)}</text>`;
+  for (let x = 0; x <= xmax + 1e-9; x += xs) s += `<line class="gr" y1="${m.t}" y2="${Hh - m.b}" x1="${sx(x)}" x2="${sx(x)}"/><text x="${sx(x)}" y="${Hh - m.b + 16}" text-anchor="middle">${nf(x, 0)}</text>`;
+  s += `<line class="ax" x1="${m.l}" x2="${W - m.r}" y1="${Hh - m.b}" y2="${Hh - m.b}"/><line class="ax" x1="${m.l}" x2="${m.l}" y1="${m.t}" y2="${Hh - m.b}"/>`;
+  s += `<text x="${(m.l + W - m.r) / 2}" y="${Hh - 6}" text-anchor="middle">${esc(o.xLabel)}</text>`;
+  s += `<text transform="translate(14 ${(m.t + Hh - m.b) / 2}) rotate(-90)" text-anchor="middle">${esc(o.yLabel)}</text>`;
+  s += `<g clip-path="url(#${cid})">`;
+  o.series.forEach((se, i) => {
+    let d = '', pen = false;
+    se.ys.forEach((y, k) => {
+      if (y == null || !isFinite(y)) { pen = false; return; }
+      d += (pen ? 'L' : 'M') + sx(o.xs[k]).toFixed(1) + ' ' + sy(y).toFixed(1); pen = true;
+    });
+    if (se.area && d) {
+      const first = o.xs.findIndex((x, k) => se.ys[k] != null), last = o.xs.length - 1;
+      s += `<path class="area" d="${d} L${sx(o.xs[last])} ${sy(ymin)} L${sx(o.xs[first])} ${sy(ymin)} Z"/>`;
+    }
+    s += `<path class="${se.cls}" d="${d}"/>`;
+  });
+  s += '</g>';
+  (o.hl || []).forEach(h => {
+    if (h.y <= ymax * 1.02) {
+      s += `<line class="${h.cls}" x1="${m.l}" x2="${W - m.r}" y1="${sy(h.y)}" y2="${sy(h.y)}"/><text class="lbl ${h.tc || ''}" x="${W - m.r - 4}" y="${sy(h.y) - 5}" text-anchor="end">${esc(h.label)}</text>`;
+    } else {
+      s += `<text class="lbl ${h.tc || ''}" x="${W - m.r - 4}" y="${m.t - 6}" text-anchor="end">↑ ${esc(h.label)} (di atas skala)</text>`;
+    }
+  });
+  if (o.marker) s += `<circle id="${o.marker}" class="mk" r="5" cx="-20" cy="-20"/>`;
+  s += '</svg>';
+  el.innerHTML = s;
+  return { sx, sy };
+}
+const keys = (el, arr) => el.innerHTML = arr.map(([c, l, dash]) => `<span><i style="background:${c};${dash ? 'opacity:.8' : ''}"></i>${esc(l)}</span>`).join('');
+
+/* ---------- render ---------- */
+let RES = null, pullScale = null;
+const ucColor = uc => uc > 1 ? 'var(--bad)' : uc > .85 ? 'var(--warn)' : 'var(--ok)';
+
+function render(R) {
+  const I = R.I, P = R.P, g = R.geo, pl = R.pull;
+  const steel = R.steel;
+  // verdict
+  const nFail = R.checks.filter(c => !c.ok).length;
+  const v = $('verdict');
+  v.className = 'verdict ' + (nFail ? 'bad' : 'ok');
+  v.innerHTML = nFail ? `${nFail} pemeriksaan tidak memenuhi <small>${esc(I.name)}</small>` : `Semua pemeriksaan memenuhi <small>${esc(I.name)}</small>`;
+
+  // cards
+  const cards = [
+    ['Panjang HDD', nf(g.L, 1), 'm'],
+    ['Kedalaman lintasan', nf(g.Dd, 1), 'm dari muka tanah'],
+    ['Radius lengkung', nf(Math.min(g.R1, g.R2), 0), 'm'],
+    ['Entry / exit dari tepi', `${nf(g.entryDist, 0)} / ${nf(g.exitDist, 0)}`, 'm'],
+    ['Pull load maksimum', nf(tf(pl.Tmax), 2), 't'],
+    ['Tonase min. mesin HDD', nf(tf(pl.rigNameplate), 1), `t · pilih ≥ ${pl.rigRecT} t`],
+    ...(steel ? [] : [['Safe Pull Strength', nf(tf(R.pe.SPS), 2), 't (batas aman PE)']])
+  ];
+  $('cards').innerHTML = cards.map(c => `<div><dt>${c[0]}</dt><dd>${c[1]} <small>${c[2]}</small></dd></div>`).join('');
+
+  // messages
+  $('msgs').innerHTML = R.warn.map(w => `<li class="w">${esc(w)}</li>`).join('') + R.info.map(w => `<li class="i">${esc(w)}</li>`).join('');
+
+  // checks
+  let th = '<tr><th>Pemeriksaan</th><th class="n">Nilai</th><th class="n">Batas</th><th>Satuan</th><th>UC</th><th>Status</th><th>Acuan</th></tr>';
+  let grp = '';
+  for (const c of R.checks) {
+    if (c.grp !== grp) { grp = c.grp; th += `<tr class="grp"><td colspan="7">${esc(grp)}</td></tr>`; }
+    const d = c.unit === '–' ? 2 : c.unit === 'kPa' ? 0 : 2;
+    th += `<tr><td>${esc(c.name)}${c.note ? `<div class="ref">${esc(c.note)}</div>` : ''}</td><td class="n">${nf(c.val, d)}</td><td class="n">${nf(c.lim, d)}</td><td>${c.unit}</td>
+      <td class="n"><span class="ucbar"><i style="width:${Math.min(100, c.uc * 100)}%;background:${c.byDesign && c.ok ? 'var(--ok)' : ucColor(c.uc)}"></i></span>${nf(c.uc, 2)}</td>
+      <td><span class="pill ${c.ok ? (c.uc > .85 && !c.byDesign ? 'warn' : 'ok') : 'bad'}">${c.ok ? (c.byDesign ? 'Sesuai desain' : c.uc > .85 ? 'OK · tipis' : 'OK') : 'Tidak OK'}</span></td><td class="ref">${esc(c.ref)}</td></tr>`;
+  }
+  $('tblChecks').innerHTML = th;
+
+  // rig sizing
+  const npT = tf(pl.rigNameplate);
+  $('rigBig').innerHTML = `${nf(npT, 1)} <small>ton</small>`;
+  $('rigRec').innerHTML = `≈ ${nf(npT * 2204.62, 0)} lb · pilih rig ≥ <b>${pl.rigRecT} t</b> · kelas ${esc(pl.rigClass)}`;
+  const rigOk = I.rigCap * 1000 * G >= pl.rigNameplate;
+  let tr = '<tr><th>Langkah</th><th class="n">Nilai</th><th>Keterangan</th></tr>';
+  const rr = (a, b, c) => tr += `<tr><td>${a}</td><td class="n">${b}</td><td class="ref">${c}</td></tr>`;
+  const ph = R.ph;
+  ph.phases.forEach((f, i) => rr(`1${'abc'[i]} · ${f.name}`, (f === ph.gov ? '<b>' : '') + nf(tf(f.T), 2) + ' t' + (f === ph.gov ? '</b>' : ''), (f === ph.gov ? 'Penentu · ' : '') + f.note));
+  rr('2 · Faktor keamanan', '× ' + nf(I.rigSF, 2), 'Tanah homogen & data lengkap 1,5 · pasir/kerikil/data minim ≥ 2,0');
+  rr('3 · Beban desain', nf(tf(pl.rigReq), 2) + ' t', 'Beban fase penentu × SF');
+  rr('4 · Kapasitas efektif rig', '÷ ' + nf(I.rigDerate * 100, 0) + '%', 'Kapasitas brosur adalah puncak; kerja kontinu lebih rendah');
+  rr('5 · Kapasitas brosur minimum', `<b>${nf(npT, 1)} t</b>`, `≈ ${nf(npT * 2204.62, 0)} lb`);
+  rr('6 · Ukuran rig yang dipilih', `≥ ${pl.rigRecT} t`, 'Dibulatkan ke ukuran umum di pasaran');
+  rr('7 · Rig yang diinput', `${nf(I.rigCap, 0)} t <span class="pill ${rigOk ? 'ok' : 'bad'}">${rigOk ? 'Cukup' : 'Kurang'}</span>`, rigOk ? `Kapasitas efektif ${nf(I.rigCap * I.rigDerate, 1)} t ≥ pull load desain` : `Kurang ${nf(npT - I.rigCap, 1)} t dari kapasitas minimum`);
+  rr('8 · Torsi yang dibutuhkan', `${nf(ph.Tq * I.rigSF / 1000, 1)} kN·m`, `${nf(ph.Tq * I.rigSF / 1000 * 737.56, 0)} ft·lb · reaming ${nf(ph.reamTq / 1000, 1)}, pilot ${nf(ph.pilotTq / 1000, 1)} kN·m × SF${I.rigTorque > 0 ? ` · rig ${nf(I.rigTorque, 0)} kN·m ${I.rigTorque * 1000 >= ph.Tq * I.rigSF ? 'cukup' : 'kurang'}` : ''}`);
+  rr('9 · Rencana reaming', ph.passes.map(p => nf(p.d / H.IN, 0) + '″').join(' → '), `Tahanan potong ${nf(ph.qr / 1000 / I.kHamb, 0)} kPa${I.qReam > 0 ? '' : ' (otomatis dari jenis tanah)'} · drill pipe ${ph.dp.label}`);
+  if (!steel) rr('10 · Weak link / breakaway', `≤ ${nf(tf(R.pe.SPS), 2)} t`, 'Wajib bila rig lebih kuat dari Safe Pull Strength pipa PE');
+  $('tblRig').innerHTML = tr;
+  $('rigNotes').innerHTML = [
+    'Tonase dicek pada tiga fase: dorongan saat pilot, tarikan saat reaming (termasuk tahanan potong reamer dan gesekan drill pipe), dan tarikan saat pullback. Yang terbesar menentukan. Bila brosur rig memberi angka thrust dan pullback berbeda, cek fase pilot terhadap angka thrust.',
+    'Tahanan potong reamer dan WOB adalah asumsi tipikal; kalibrasi dengan data kontraktor (jenis reamer, kecepatan reaming, debit lumpur). Torsi adalah estimasi kasar.',
+    'Cek juga panjang drill rod ≥ ' + nf(g.L, 0) + ' m dan radius minimum drill rod ≤ R lintasan ' + nf(Math.min(g.R1, g.R2), 0) + ' m.',
+    'Kapasitas pompa lumpur harus sesuai diameter reamer dan jenis tanah; untuk crossing panjang, pompa sering lebih menentukan daripada tonase.',
+    'Hitung ulang dengan properti lumpur dan rencana reaming dari kontraktor sebelum mesin ditetapkan.'
+  ].map(t => `<li>${esc(t)}</li>`).join('');
+
+  // pull chart
+  const xs = pl.curve.map(c => c.s), ys = pl.curve.map(c => tf(c.T));
+  const hl = [{ y: I.rigCap, label: `Kapasitas rig ${nf(I.rigCap, 0)} t`, cls: 'lim', tc: 'bad' }];
+  if (!steel) {
+    hl.push({ y: tf(R.pe.SPS), label: `Safe Pull Strength ${nf(tf(R.pe.SPS), 1)} t`, cls: 'lim2', tc: 'warn' });
+    hl.push({ y: tf(R.pe.Tbreak), label: `Batas putus/yield ${nf(tf(R.pe.Tbreak), 1)} t`, cls: 'lim', tc: 'bad' });
+  }
+  pullScale = lineChart($('chPull'), { xs, xmax: g.L, series: [{ ys, cls: 's1', area: true }], hl, xLabel: 'Panjang pipa yang sudah masuk lubang (m)', yLabel: 'Gaya tarik (ton)', marker: 'mkPull', aria: 'Grafik gaya tarik terhadap panjang tarikan' });
+  keys($('keyPull'), [['var(--accent)', 'Gaya tarik di kepala tarik'], ['var(--bad)', steel ? 'Kapasitas rig' : 'Kapasitas rig / batas putus'], ...(steel ? [] : [['var(--warn)', 'Safe Pull Strength (ASTM F1962)']])]);
+  $('pullNote').textContent = steel
+    ? `Metode PRCI, dihitung bertahap selama pipa masuk. Maksimum ${nf(tf(pl.Tmax), 2)} t saat ${nf(pl.sMax, 0)} m tertarik. Faktor hambatan ${nf(I.kHamb, 1)}×.`
+    : `Metode ASTM F1962 (capstan + hidrokinetik ${nf(tf(pl.hk), 2)} t). Maksimum ${nf(tf(pl.Tmax), 2)} t. Faktor hambatan ${nf(I.kHamb, 1)}×.`;
+  let tp = `<tr><th>Segmen (urutan tarik)</th><th class="n">Panjang m</th><th class="n">Gesekan kg</th><th class="n">${steel ? 'Fluid drag kg' : 'Drag kg'}</th><th class="n">Komp. berat kg</th>${steel ? '<th class="n">Gaya normal N kg</th>' : ''}<th class="n">T ujung t</th></tr>`;
+  const T0 = pl.fin.segOut.length ? pl.fin.segOut[0].T1 : 0;
+  tp += `<tr><td>Pipa string di atas tanah (sisa)</td><td class="n">–</td><td class="n">${nf(T0 / G, 0)}</td><td class="n">–</td><td class="n">–</td>${steel ? '<td class="n">–</td>' : ''}<td class="n">${nf(tf(T0), 2)}</td></tr>`;
+  pl.fin.segOut.forEach(s => {
+    tp += `<tr><td>${esc(s.name)}</td><td class="n">${nf(s.L, 1)}</td><td class="n">${nf(s.fr / G, 0)}</td><td class="n">${nf(s.dr / G, 0)}</td><td class="n">${nf(s.wt / G, 0)}</td>${steel ? `<td class="n">${s.N ? nf(Math.abs(s.N) / G, 0) : '–'}</td>` : ''}<td class="n">${nf(tf(s.T2), 2)}</td></tr>`;
+  });
+  if (!steel) tp += `<tr><td>Hidrokinetik (ASTM F1962)</td><td class="n">–</td><td class="n">–</td><td class="n">${nf(pl.hk / G, 0)}</td><td class="n">–</td><td class="n">${nf(tf(pl.fin.head), 2)}</td></tr>`;
+  $('tblPull').innerHTML = tp;
+
+  // geometry
+  let tg = '<tr><th>Segmen</th><th class="n">L (m)</th><th class="n">R (m)</th><th class="n">Sudut</th><th class="n">Horiz. (m)</th></tr>';
+  g.path.segs.forEach(sg => {
+    const [x0] = sg.pos(0), [x1] = sg.pos(sg.L);
+    const ang = sg.k === 'tanEntry' ? H.deg(g.th1) : sg.k === 'tanExit' ? H.deg(g.th2) : sg.k === 'flat' ? 0 : sg.k === 'arcEntry' ? H.deg(g.th1) : H.deg(g.th2);
+    tg += `<tr><td>${esc(sg.name)}</td><td class="n">${nf(sg.L, 1)}</td><td class="n">${isFinite(sg.R) ? nf(sg.R, 0) : '–'}</td><td class="n">${nf(ang, 1)}°</td><td class="n">${nf(x1 - x0, 1)}</td></tr>`;
+  });
+  tg += `<tr><td><b>Total lintasan</b></td><td class="n"><b>${nf(g.L, 1)}</b></td><td></td><td></td><td class="n"><b>${nf(g.span, 1)}</b></td></tr>`;
+  const rows = [
+    ['Jarak entry ke tepi crossing', nf(g.entryDist, 1) + ' m', g.entryStatus === 'ok' ? '' : g.entryStatus === 'fail' ? 'Tidak muat' : 'Disesuaikan'],
+    ['Jarak exit ke tepi crossing', nf(g.exitDist, 1) + ' m', g.exitStatus === 'ok' ? '' : g.exitStatus === 'fail' ? 'Tidak muat' : 'Disesuaikan'],
+    ['Elevasi as pipa di segmen datar', '−' + nf(g.Dd, 2) + ' m', 'dari muka tanah'],
+    ['Cover minimum di bawah crossing', nf(g.minCover, 2) + ' m', 'ke top of pipe'],
+  ];
+  tg += rows.map(r => `<tr><td>${r[0]}</td><td class="n" colspan="2">${r[1]}</td><td colspan="2" class="ref">${r[2]}</td></tr>`).join('');
+  $('tblGeo').innerHTML = tg;
+
+  // pipe props
+  let pp = '<tr><th>Parameter</th><th class="n">Nilai</th><th>Satuan</th></tr>';
+  const prow = (a, b, c) => pp += `<tr><td>${a}</td><td class="n">${b}</td><td>${c}</td></tr>`;
+  if (steel) {
+    prow('Ukuran', `NPS ${P.nps} · ${esc(P.schLabel)}`, 'ASME B36.10M');
+    prow('Diameter luar OD', nf(P.D * 1000, 1), 'mm');
+    prow('Tebal dinding t', nf(P.t * 1000, 2), 'mm');
+    prow('Diameter dalam', nf(P.Di * 1000, 1), 'mm');
+    prow('D/t', nf(P.Dt, 1), '–');
+    prow('Grade', esc(P.grade), 'API 5L');
+    prow('SMYS / SMTS', `${P.SMYS} / ${P.SMTS}`, 'MPa');
+    prow('Luas penampang baja', nf(P.As * 1e6, 0), 'mm²');
+    prow('Momen inersia I', nf(P.Iz * 1e8, 1), '×10⁻⁸ m⁴');
+    prow('Modulus penampang Z', nf(P.Z * 1e6, 1), 'cm³');
+  } else {
+    prow('Ukuran', `OD ${nf(P.D * 1000, 0)} mm · SDR ${nf(P.SDR, P.SDR % 1 ? 1 : 0)}`, 'ISO 4437');
+    prow('Tebal dinding t = OD/SDR', nf(P.t * 1000, 2), 'mm');
+    prow('Diameter dalam', nf(P.Di * 1000, 1), 'mm');
+    prow('Material', esc(P.mat.label), '');
+    prow('Kuat leleh σy', nf(P.sy, 1), 'MPa');
+    prow('Modulus jangka pendek / panjang', `${P.E} / ${P.El}`, 'MPa');
+    prow('Luas penampang', nf(P.As * 1e6, 0), 'mm²');
+  }
+  prow('Berat di udara (pipa + coating)', nf(P.wa, 2), 'kg/m');
+  prow('Gaya apung lumpur', nf(P.buoy, 2), 'kg/m');
+  prow('Berat efektif kosong', nf(P.wsEmpty, 2), P.wsEmpty < 0 ? 'kg/m (mengapung)' : 'kg/m (tenggelam)');
+  prow('Berat efektif berisi air', nf(P.wsBallast, 2), 'kg/m');
+  $('tblPipe').innerHTML = pp;
+
+  // stress chart
+  if (steel) {
+    $('hStress').textContent = 'Tegangan instalasi sepanjang lintasan';
+    $('stressNote').textContent = `PRCI. Fb = ${nf(R.inst.Fb, 0)} MPa, Fhc = ${nf(R.inst.Fhc, 0)} MPa. UC tertinggi biasanya di lengkung sisi rig.`;
+    const ip = R.inst.pts;
+    lineChart($('chStress'), { xs: ip.map(p => p.s), xmax: g.L, series: [{ ys: ip.map(p => p.uc1), cls: 's1' }, { ys: ip.map(p => p.uc2), cls: 's2' }, { ys: ip.map(p => p.ft / (.9 * P.SMYS)), cls: 's3' }], hl: [{ y: 1, label: 'UC = 1,0', cls: 'lim', tc: 'bad' }], ymax: Math.max(1.15, ...ip.map(p => Math.max(p.uc1, p.uc2)).map(v => v * 1.1)), xLabel: 'Posisi dari titik entry sepanjang lintasan (m)', yLabel: 'Unity check', aria: 'Unity check sepanjang lintasan' });
+    keys($('keyStress'), [['var(--accent)', 'Tarik + bending'], ['var(--steel)', 'Tarik + bending + hoop'], ['var(--ok)', 'Tarik saja']]);
+  } else {
+    $('hStress').textContent = 'Tegangan tarik PE sepanjang lintasan';
+    $('stressNote').textContent = `Saat pipa masuk penuh. Tegangan tarik izin ${nf(R.pe.sAllow, 2)} MPa (0,4 × σy × fdurasi ${nf(R.pe.fT, 2)} × fsuhu ${nf(R.pe.fTemp, 2)}).`;
+    const ps = g.pts.map(p => pl.TatEntryS(p.s) / (P.As * 1e6));
+    lineChart($('chStress'), { xs: g.pts.map(p => p.s), xmax: g.L, series: [{ ys: ps, cls: 's1', area: true }], hl: [{ y: R.pe.sAllow, label: `Izin ${nf(R.pe.sAllow, 2)} MPa`, cls: 'lim2', tc: 'warn' }, { y: R.pe.sAllow / .4, label: `Yield ${nf(R.pe.sAllow / .4, 1)} MPa`, cls: 'lim', tc: 'bad' }], xLabel: 'Posisi dari titik entry sepanjang lintasan (m)', yLabel: 'Tegangan tarik (MPa)', aria: 'Tegangan tarik PE' });
+    keys($('keyStress'), [['var(--accent)', 'Tegangan tarik'], ['var(--warn)', 'Tegangan izin'], ['var(--bad)', 'Yield']]);
+  }
+
+  // details
+  let td = '';
+  if (steel) {
+    const o = R.op;
+    $('hDetail').textContent = 'Hydrotest & operasi';
+    td = '<tr><th>Parameter</th><th class="n">Hydrotest</th><th class="n">Operasi</th><th>Satuan</th></tr>';
+    const r2 = (a, b, c, u) => td += `<tr><td>${a}</td><td class="n">${b}</td><td class="n">${c}</td><td>${u}</td></tr>`;
+    r2('Tekanan', `${nf(o.Ph * 10, 1)} barg<br><span class="ref">${nf(o.Ph * 10 * PSI_PER_BAR, 0)} psig</span>`, `${nf(o.Pd * 10, 1)} barg<br><span class="ref">${nf(o.Pd * 10 * PSI_PER_BAR, 0)} psig</span>`, '');
+    r2('Suhu', `${nf(I.tInst, 1)} °C`, `${nf(I.tInst, 1)} → ${nf(I.tOp, 1)} °C<br><span class="ref">${nf(I.tInst * 9 / 5 + 32, 0)} → ${nf(I.tOp * 9 / 5 + 32, 0)} °F</span>`, '');
+    r2('Corrosion allowance', '–', `${nf(P.CA * 1000, 2)} mm<br><span class="ref">${nf(P.CA * 1000 / 25.4, 4)} in</span>`, '');
+    r2('Tebal dinding dipakai', nf(P.t * 1000, 2), nf(o.tC, 2) + ' (−CA)', 'mm');
+    r2('Hoop Sh', nf(o.ht.Sh, 1), nf(o.opr.Sh, 1), 'MPa');
+    r2('Thermal ST = Eα(T1−T2)', nf(o.ht.ST, 1), nf(o.opr.ST, 1), 'MPa');
+    r2('Bending fb di lengkung', '±' + nf(o.fbMax, 1), '±' + nf(o.fbMax, 1), 'MPa');
+    r2('Longitudinal SL (terkritis)', nf(o.ht.SL, 1), nf(o.opr.SL, 1), 'MPa');
+    r2('Combined Tresca', nf(o.ht.tres, 1), nf(o.opr.tres, 1), 'MPa');
+    r2('Combined von Mises', nf(o.ht.vm, 1), nf(o.opr.vm, 1), 'MPa');
+    r2('Max shear', nf(o.ht.fv, 1), nf(o.opr.fv, 1), 'MPa');
+    td += `<tr><td>MAOP teoretis (B31.8, tebal nominal)</td><td class="n" colspan="2">${nf(o.MAOP, 1)} barg (${nf(o.MAOP * PSI_PER_BAR, 0)} psig)</td><td></td></tr>`;
+    td += `<tr><td>Tebal perlu (termasuk CA)</td><td class="n" colspan="2">${nf(o.treq, 2)}</td><td>mm</td></tr>`;
+  } else {
+    const e = R.pe;
+    $('hDetail').textContent = 'Batas tarik, tekanan & pneumatic test PE';
+    td = '<tr><th>Parameter</th><th class="n">Nilai</th><th>Satuan</th></tr>';
+    const r1 = (a, b, u) => td += `<tr><td>${a}</td><td class="n">${b}</td><td>${u}</td></tr>`;
+    r1('Durasi pullback', nf(R.C.pullHours, 1), 'jam');
+    r1('Faktor durasi tarik fT', nf(e.fT, 2), '–');
+    r1('Faktor suhu', nf(e.fTemp, 2), '–');
+    r1('Tegangan tarik izin (0,4 × σy × fT × fsuhu)', nf(e.sAllow, 2), 'MPa');
+    r1('Safe Pull Strength', nf(tf(e.SPS), 2), 't');
+    r1('Batas putus/yield', nf(tf(e.Tbreak), 2), 't');
+    r1('Pull load maksimum', nf(tf(pl.Tmax), 2), 't');
+    r1('Perpanjangan elastis saat ditarik', nf(e.elong * 100, 1), 'cm');
+    r1('Tekanan eksternal instalasi', nf(e.Pext * 1000, 0), 'kPa');
+    r1(`Tekanan kritis collapse (fo ${nf(e.fo, 2)}, fR ${nf(e.fR, 2)})`, nf(e.Pcr * 1000, 0), 'kPa');
+    r1('Tekanan air tanah jangka panjang', nf(e.PextLT * 1000, 0), 'kPa');
+    r1('Tekanan kritis jangka panjang', nf(e.PcrLT * 1000, 0), 'kPa');
+    r1('MOP pipa (ISO 4437)', `${nf(e.MOP, 1)} bar (${nf(e.MOP * PSI_PER_BAR, 0)} psig)`, '');
+    r1(`Tekanan pneumatic test (${nf(e.htF, 2)} × DP)`, `${nf(e.Ptest, 2)} barg (${nf(e.Ptest * PSI_PER_BAR, 1)} psig)`, '');
+    r1('Hoop stress saat pneumatic test', nf(e.sTest, 2), 'MPa');
+  }
+  $('tblDetail').innerHTML = td;
+
+  // natural bending / bend radius
+  let tn = '<tr><th>Parameter</th><th class="n">Nilai</th><th>Keterangan</th></tr>';
+  const rn = (a, b, c) => tn += `<tr><td>${a}</td><td class="n">${b}</td><td class="ref">${c}</td></tr>`;
+  if (steel) {
+    $('hNb').textContent = 'Natural bending & span roller';
+    rn('R minimum elastis E·D/(2σb)', nf(R.Rr.elastic, 0) + ' m', `σb = ${nf(I.bendFrac * 100, 0)}% SMYS`);
+    rn('R praktik 1200 × OD', nf(R.Rr.rule, 0) + ' m', 'Aturan praktis industri HDD');
+    rn('R minimum drill rod', I.rRod ? nf(I.rRod, 0) + ' m' : '–', 'Input data rig');
+    rn('R rekomendasi', nf(R.Rr.rec, 0) + ' m', 'Maksimum ketiganya, dibulatkan 5 m');
+    rn('R desain dipakai', nf(Math.min(g.R1, g.R2), 0) + ' m', `fb = ${nf(R.op.fbMax, 1)} MPa (${nf(R.op.fbMax / P.SMYS * 100, 0)}% SMYS)`);
+    rn(`Sudut natural bend per joint ${nf(I.joint, 0)} m (R elastis)`, nf(R.nb.angJoint, 2) + '°', 'Maksimum lendutan elastis per joint');
+    rn('Sudut per joint pada R desain', nf(R.nb.angJointDesign, 2) + '°', '');
+    rn('Span roller maks. (pipa kosong)', nf(R.nb.spanEmpty, 1) + ' m', 'M = wL²/10, σ ≤ batas bending');
+    rn('Span roller maks. (berisi air, hydrotest)', nf(R.nb.spanFull, 1) + ' m', 'Uji pra-instalasi di atas roller');
+  } else {
+    $('hNb').textContent = 'Radius tekuk PE';
+    rn(`R minimum jangka panjang (${nf(R.Rr.longterm / P.D, 0)} × OD)`, nf(R.Rr.longterm, 1) + ' m', 'PPI, fungsi SDR');
+    rn('R panduan lintasan HDD (40 × OD)', nf(R.Rr.rule, 1) + ' m', 'ASTM F1962 / PPI');
+    rn('R minimum drill rod', I.rRod ? nf(I.rRod, 0) + ' m' : '–', 'Biasanya yang menentukan untuk PE');
+    rn('R desain dipakai', nf(Math.min(g.R1, g.R2), 0) + ' m', '');
+    rn('Weak link / breakaway yang disarankan', '≤ ' + nf(tf(R.pe.SPS), 2) + ' t', 'Setel ≤ Safe Pull Strength');
+  }
+  $('tblNb').innerHTML = tn;
+
+  // hydrofrac chart
+  const fr = R.frac;
+  const fx = fr.pts.map(p => p.s);
+  lineChart($('chFrac'), { xs: fx, xmax: g.L, series: [{ ys: fr.pts.map(p => p.pmax), cls: 's2' }, { ys: fr.pts.map(p => p.pmax == null ? null : p.pmax / I.fracSF), cls: 's3' }, { ys: fr.pts.map(p => p.preq), cls: 's1' }], xLabel: 'Posisi bit dari titik entry (m)', yLabel: 'Tekanan (kPa)', aria: 'Tekanan lumpur vs batas hydrofracture', ymax: Math.max(Math.max(...fr.pts.map(p => p.preq)) * 1.5, Math.min(Math.max(...fr.pts.map(p => p.pmax == null ? 0 : p.pmax / I.fracSF)) * 1.1, Math.max(...fr.pts.map(p => p.preq)) * 3)) });
+  keys($('keyFrac'), [['var(--accent)', 'Tekanan lumpur dibutuhkan di bit'], ['var(--steel)', 'Pmax Delft'], ['var(--ok)', `Pmax / FK ${nf(I.fracSF, 1)}`]]);
+  $('fracNote').textContent = fr.soil.rock ? `Tanah: ${fr.soil.label}. Metode Delft tidak berlaku; grafik hanya menampilkan tekanan lumpur yang dibutuhkan.` : `Tanah: ${fr.soil.label} (c = ${fr.soil.c} kPa, φ = ${fr.soil.phi}°, G = ${nf(fr.soil.G / 1000, 0)} MPa, γsat = ${nf(fr.soil.gsat, 1)} kN/m³${fr.soil.note ? '; ' + fr.soil.note : ''}). Rasio tertinggi ${nf(fr.worst, 2)} pada ${nf(fr.worstS, 0)} m dari entry.${fr.failAt.length ? ' Ada zona berisiko frac-out.' : ''}`;
+
+  // construction
+  const C = R.C;
+  let tc = '<tr><th>Item</th><th class="n">Nilai</th><th>Catatan</th></tr>';
+  const rc = (a, b, c) => tc += `<tr><td>${a}</td><td class="n">${b}</td><td class="ref">${c}</td></tr>`;
+  rc('Diameter pilot bit', nf(I.pilotIn, 3) + '″', '');
+  rc('Diameter reamer akhir', `${nf(C.Dream * 1000, 0)} mm (${nf(C.Dream / H.IN, 1)}″)`, 'OD < 8″: +4″ · 8–24″: 1,5×OD · > 24″: +12″');
+  rc('Volume lubang', nf(C.Vhole, 1) + ' m³', '≈ volume cutting/spoil');
+  rc('Volume annulus setelah pipa masuk', nf(C.Vannulus, 1) + ' m³', '');
+  rc('Estimasi kebutuhan lumpur', nf(C.Vmud, 0) + ' m³', `${nf(C.mudFactor, 1)} × volume lubang (tipikal untuk ${esc(R.frac.soil.label.toLowerCase())})`);
+  rc('Panjang pipa string', nf(C.Lstring, 0) + ' m', 'Siapkan area fabrikasi lurus di sisi exit');
+  rc('Tonase minimum mesin HDD', nf(tf(pl.rigNameplate), 1) + ' t', `Pilih ≥ ${pl.rigRecT} t · kelas ${pl.rigClass}`);
+  rc('Estimasi durasi pullback', nf(C.pullHours, 1) + ' jam', R.steel ? 'Info' : 'Dipakai untuk faktor durasi PE');
+  rc('Vertikal: kedalaman / elevasi tepi', `${nf(g.Dd, 1)} m`, R.geo.river ? `Muka air ±${nf(-g.waterLvl, 1)} m di bawah tepi` : 'Muka jalan = elevasi 0');
+  $('tblCon').innerHTML = tc;
+
+  // standards
+  const std = [
+    ['ASME B31.8', 'Gas Transmission and Distribution Piping Systems', 'Design factor & location class (Tabel 841.1.6-1), tebal dinding (§841.1.1), tekanan uji (§841.3), tegangan longitudinal & kombinasi (§833.3, §833.4).', 's'],
+    ['ASME B36.10M', 'Welded and Seamless Wrought Steel Pipe', 'OD dan tebal dinding per NPS/schedule.', 's'],
+    ['API Spec 5L', 'Line Pipe', 'SMYS/SMTS per grade PSL1/PSL2.', 's'],
+    ['PRCI PR-227-9424', 'Installation of Pipelines by HDD — An Engineering Design Guide', 'Pull load per segmen (lurus & lengkung, beam 3 titik), tegangan instalasi, unity check, shear operasi ≤ 45% SMYS.', 's'],
+    ['ASCE MOP 108', 'Pipeline Design for Installation by Horizontal Directional Drilling', 'Desain profil, radius, dan evaluasi tekanan lumpur.', 'b'],
+    ['ASTM F1962', 'Maxi-HDD for Placement of PE Pipe or Conduit Under Obstacles', 'Pull load PE (capstan + hidrokinetik), Safe Pull Strength, collapse instalasi & jangka panjang.', 'p'],
+    ['PPI Handbook of PE Pipe, Bab 12', 'Horizontal Directional Drilling', 'Faktor durasi tarik & suhu, radius tekuk PE.', 'p'],
+    ['ISO 4437', 'Plastics piping systems for the supply of gaseous fuels — PE', 'Seri OD, SDR, MRS, faktor desain C ≥ 2, MOP.', 'p'],
+    ['ASTM D2513', 'Polyethylene Gas Pressure Pipe, Tubing, and Fittings', 'Alternatif spesifikasi pipa PE gas (IPS/CTS).', 'p'],
+    ['API RP 1102', 'Steel Pipelines Crossing Railroads and Highways', 'Rujukan crossing jalan/rel; beban lalu lintas siklik belum dihitung di alat ini.', 'b'],
+    ['Delft Geotechnics (Luger & Hergarden, 1988)', 'Cavity expansion model', 'Tekanan lumpur maksimum untuk screening hydrofracture.', 'b'],
+    ['NEN 3650 / 3651', 'Requirements for pipeline systems', 'Rujukan koefisien gesek & fluid drag.', 'b'],
+    ['Permen ESDM No. 32 Tahun 2021', 'Keselamatan pipa penyalur minyak dan gas bumi', 'Kerangka regulasi (tidak dihitung).', 'b'],
+    ['SNI 13-3474', 'Sistem perpipaan transmisi dan distribusi gas', 'Rujukan nasional (tidak dihitung).', 'b']
+  ];
+  $('std').innerHTML = std.map(s => `<div style="${(s[3] === 's' && !steel) || (s[3] === 'p' && steel) ? 'opacity:.55' : ''}"><b>${s[0]}</b><span><i>${s[1]}</i>. ${s[2]}</span></div>`).join('');
+
+  $('assume').innerHTML = [
+    'Profil 2D: tangen – lengkung – datar – lengkung – tangen. Muka tanah di kedua sisi rata (elevasi 0). Tebing sungai dimodelkan miring 1V:2H.',
+    'Segmen datar menutupi seluruh lebar crossing ditambah perpanjangan di tiap tepi, sehingga cover minimum terpenuhi di seluruh lebar.',
+    steel ? 'Pull load baja: PRCI, dihitung bertahap selama pipa masuk. Lengkung memakai model beam 3 titik (Roark) dengan iterasi tension rata-rata. Pipa string di atas tanah memakai gesekan roller/tanah dan efek capstan di titik exit.' : 'Pull load PE: ASTM F1962 (capstan di lengkung + tekanan hidrokinetik), tanpa fluid drag. Pipa string di atas tanah memakai gesekan roller/tanah dan capstan di titik exit.',
+    steel ? 'Tegangan instalasi dievaluasi pada distribusi tension saat pipa sudah masuk penuh (tarikan terbesar di sisi rig). Hoop eksternal memakai tekanan hidrostatik lumpur di kedalaman titik.' : 'Batas putus PE = σy × faktor durasi × faktor suhu × A; Safe Pull Strength = 0,4 × nilai tersebut. Faktor durasi & suhu tipikal PPI: verifikasi dengan data pabrikan.',
+    steel ? 'Operasi: tebal dikurangi corrosion allowance, tekanan eksternal diabaikan (konservatif untuk hoop), pipa tertahan penuh (restrained). Hydrotest: tebal nominal, tekanan = faktor hydrotest × DP (default 1,5; minimum sesuai ASME B31.8 Tabel 841.3.2-1).' : 'Collapse jangka panjang hanya memakai tekanan air tanah; beban tanah perlu dicek terpisah bila cover dangkal. Pipa PE diuji pneumatik (udara/nitrogen), tekanan = faktor × DP (default 1,1). Uji pneumatik menyimpan energi besar: terapkan zona aman dan prosedur sesuai spesifikasi proyek.',
+    'Hydrofracture: metode Delft dengan parameter tanah tipikal per jenis. Tekanan lumpur dibutuhkan = hidrostatik + kehilangan tekanan annulus linear. Zona < 1,5 m dari permukaan diabaikan.',
+    'Belum dicakup: beban lalu lintas siklik (API RP 1102), buoyancy control rinci, gempa, dan analisis FEA.'
+  ].map(t => `<li>${esc(t)}</li>`).join('');
+
+  // legend under animation
+  $('legend').innerHTML = [
+    [steel ? 'var(--pipeSteel)' : 'var(--pipePE)', steel ? 'Pipa baja (coating 3LPE)' : 'Pipa PE'],
+    ['var(--hole)', 'Lubang hasil reaming'], ['var(--scene-ink)', 'Lintasan rencana'], ['var(--bad)', 'Cover minimum']
+  ].map(([c, l]) => `<span><i style="background:${c}"></i>${l}</span>`).join('');
+}
+
+/* ---------- copy summary ---------- */
+$('btnCopy').addEventListener('click', () => {
+  if (!RES) return;
+  const R = RES, I = R.I, g = R.geo;
+  const pipe = R.steel ? `Baja NPS ${R.P.nps} ${R.P.schLabel} (OD ${nf(R.P.D * 1000, 1)} mm, t ${nf(R.P.t * 1000, 2)} mm), ${R.P.grade}` : `PE ${R.P.matKey} OD ${nf(R.P.D * 1000, 0)} mm SDR ${R.P.SDR}`;
+  const pj = readProj();
+  const lines = [
+    ...(pj.name ? [`Proyek: ${pj.name}${pj.docNo ? ' (' + pj.docNo + ', Rev. ' + pj.rev + ')' : ''}`] : []),
+    `HDD ${I.name} (${g.river ? 'sungai' : 'jalan'}, lebar ${nf(I.W, 0)} m)`,
+    `Pipa: ${pipe}`,
+    `Panjang HDD ${nf(g.L, 1)} m; kedalaman ${nf(g.Dd, 1)} m; R ${nf(Math.min(g.R1, g.R2), 0)} m; entry ${nf(H.deg(g.th1), 1)}° / exit ${nf(H.deg(g.th2), 1)}°`,
+    `Jarak entry ${nf(g.entryDist, 1)} m, exit ${nf(g.exitDist, 1)} m dari tepi crossing`,
+    `Pull load maks ${nf(tf(R.pull.Tmax), 2)} t; tonase minimum mesin HDD ${nf(tf(R.pull.rigNameplate), 1)} t (SF ${I.rigSF}, efektif ${Math.round(I.rigDerate * 100)}%), pilih rig >= ${R.pull.rigRecT} t`,
+    ...R.checks.map(c => `- ${c.grp}: ${c.name} = ${nf(c.val, 2)} / ${nf(c.lim, 2)} ${c.unit} (UC ${nf(c.uc, 2)}) ${c.ok ? 'OK' : 'TIDAK OK'}`)
+  ];
+  const txt = lines.join('\n');
+  const btn = $('btnCopy');
+  const done = () => { btn.textContent = 'Tersalin'; setTimeout(() => btn.textContent = 'Salin ringkasan', 1600); };
+  try {
+    navigator.clipboard.writeText(txt).then(done, () => fallbackCopy(txt, done));
+  } catch (e) { fallbackCopy(txt, done); }
+});
+function fallbackCopy(txt, done) {
+  const ta = document.createElement('textarea'); ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); done(); } catch (e) { $('btnCopy').textContent = 'Gagal menyalin'; }
+  ta.remove();
+}
+
+/* =================== ANIMATION =================== */
+const cv = $('cv'), ctx = cv.getContext('2d');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const PH = [{ k: 'pilot', d: 6, label: 'Pengeboran pilot' }, { k: 'ream', d: 4.5, label: 'Reaming / pembesaran lubang' }, { k: 'pull', d: 9, label: 'Pullback pipa' }];
+const HOLD = 3, EVHOLD = 4;
+const A = { t: 0, playing: !reduce, speed: 1, last: 0, W: 0, H: 0, dpr: 1, map: null, col: {}, dots: [], stars: [] };
+
+function readColors() {
+  const cs = getComputedStyle(document.documentElement);
+  ['sky1', 'sky2', 'grass', 'soil0', 'soil1', 'soil2', 'soil3', 'dot', 'water1', 'water2', 'asphalt', 'hole', 'pipeSteel', 'pipePE', 'rig', 'scene-ink', 'scene-label', 'accent', 'bad', 'warn', 'ok', 'steel', 'raised', 'ink'].forEach(k => A.col[k] = cs.getPropertyValue('--' + k).trim());
+  const dt = document.documentElement.getAttribute('data-theme');
+  A.dark = dt === 'dark' || (dt !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+}
+function rng(seed) { let s = seed >>> 0; return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296; }
+
+function layout() {
+  const R = RES; if (!R) return;
+  const r = cv.getBoundingClientRect();
+  A.dpr = Math.min(2, window.devicePixelRatio || 1);
+  A.W = r.width; A.H = r.height;
+  cv.width = Math.round(r.width * A.dpr); cv.height = Math.round(r.height * A.dpr);
+  const g = R.geo;
+  const xL = -Math.max(g.span * .16, 28), xR = g.span + Math.max(g.span * .2, 30);
+  const kx = A.W / (xR - xL);
+  const y0 = A.H * (A.W < 520 ? .40 : .36);
+  const zB = -(g.Dd + Math.max(3, g.Dd * .3));
+  const fit = (A.H - y0 - 4) / (-zB) / kx;
+  const mode = $('veMode').value;
+  let VE;
+  if (mode === 'true') VE = 1;
+  else if (mode === 'full') VE = Math.max(1, fit);
+  else {
+    // keep the steepest tangent visually below ~52° so angles stay readable
+    const thm = Math.max(g.th1, g.th2);
+    VE = clamp(fit, 1, Math.max(1, Math.min(14, Math.tan(H.rad(52)) / Math.tan(thm))));
+  }
+  VE = Math.min(VE, fit);
+  const kz = kx * VE;
+  A.map = { xL, xR, kx, kz, y0, zB, sx: x => (x - xL) * kx, sy: z => y0 - z * kz };
+  A.VE = kz / kx;
+  $('scaleNote').textContent = A.VE < 1.05 && A.VE > .95 ? 'Skala 1 : 1' : `Skala vertikal ×${nf(A.VE, A.VE < 10 ? 1 : 0)} · sudut di gambar tampak lebih curam`;
+  // pipe pixel sizes
+  A.pw = clamp(R.P.Dc * kz * .9, 3.5, 9);
+  A.hw = clamp(R.C.Dream * kz * .9, A.pw + 3, 15);
+  // screen path
+  A.sp = g.pts.map(p => ({ s: p.s, x: A.map.sx(p.x), y: A.map.sy(p.z) }));
+  // texture dots
+  const rand = rng(7);
+  A.dots = [];
+  const n = Math.round(A.W * (A.H - y0) / 380);
+  for (let i = 0; i < n; i++) {
+    const x = rand() * A.W, y = y0 + rand() * (A.H - y0);
+    const wx = xL + x / kx, wz = (y0 - y) / kz;
+    if (wz < g.zSurf(wx) - .05) A.dots.push([x, y, rand() * 1.4 + .4]);
+  }
+  const rs = rng(3); A.stars = [];
+  for (let i = 0; i < 70; i++) A.stars.push([rs() * A.W, rs() * y0 * .85, rs() * 1.2 + .3, rs() * 6]);
+}
+function ptAt(s) {
+  // interpolated screen point + tangent at path distance s (from entry)
+  const sp = A.sp, L = RES.geo.L;
+  s = clamp(s, 0, L);
+  const f = s / L * (sp.length - 1), i = Math.min(sp.length - 2, Math.floor(f)), u = f - i;
+  const a = sp[i], b = sp[i + 1];
+  return { x: a.x + (b.x - a.x) * u, y: a.y + (b.y - a.y) * u, dx: b.x - a.x, dy: b.y - a.y };
+}
+function strokePath(s0, s1, w, color, cap = 'round') {
+  if (s1 <= s0) return;
+  const sp = A.sp, L = RES.geo.L, n = sp.length - 1;
+  ctx.beginPath();
+  const p0 = ptAt(s0); ctx.moveTo(p0.x, p0.y);
+  const i0 = Math.ceil(s0 / L * n), i1 = Math.floor(s1 / L * n);
+  for (let i = i0; i <= i1; i++) ctx.lineTo(sp[i].x, sp[i].y);
+  const p1 = ptAt(s1); ctx.lineTo(p1.x, p1.y);
+  ctx.lineWidth = w; ctx.strokeStyle = color; ctx.lineCap = cap; ctx.lineJoin = 'round'; ctx.stroke();
+}
+function Tat(sIn) {
+  const c = RES.pull.curve, L = RES.geo.L;
+  const f = clamp(sIn / L, 0, 1) * (c.length - 1), i = Math.min(c.length - 2, Math.floor(f)), u = f - i;
+  return c[i].T + (c[i + 1].T - c[i].T) * u;
+}
+
+function timeline() {
+  const R = RES, L = R.geo.L;
+  let ev = null;
+  const cands = [];
+  if (!R.steel && R.pe.sBreak != null) cands.push({ type: 'break', s: R.pe.sBreak });
+  if (R.pull.sStall != null) cands.push({ type: 'stall', s: R.pull.sStall });
+  cands.sort((a, b) => a.s - b.s);
+  if (cands.length) ev = cands[0];
+  const d0 = PH[0].d, d1 = PH[1].d, d2 = PH[2].d;
+  const dPull = ev ? d2 * Math.max(.02, ev.s / L) : d2;
+  const total = d0 + d1 + dPull + (ev ? EVHOLD : HOLD);
+  return { ev, d0, d1, d2, dPull, total };
+}
+
+function frame(ts) {
+  if (!A.last) A.last = ts;
+  const dt = Math.min(.1, (ts - A.last) / 1000); A.last = ts;
+  if (A.playing && RES) {
+    A.t += dt * A.speed;
+    const tl = timeline();
+    if (A.t >= tl.total) A.t = 0;
+  }
+  draw();
+  requestAnimationFrame(frame);
+}
+
+function draw() {
+  const R = RES; if (!R || !A.map) return;
+  const c = A.col, m = A.map, g = R.geo, L = g.L, steel = R.steel;
+  ctx.setTransform(A.dpr, 0, 0, A.dpr, 0, 0);
+  ctx.clearRect(0, 0, A.W, A.H);
+  const tl = timeline();
+  // phase state
+  let ph, p, sIn = 0, evT = -1, done = false;
+  const t = A.t;
+  if (t < tl.d0) { ph = 0; p = t / tl.d0; }
+  else if (t < tl.d0 + tl.d1) { ph = 1; p = (t - tl.d0) / tl.d1; }
+  else if (t < tl.d0 + tl.d1 + tl.dPull) { ph = 2; p = (t - tl.d0 - tl.d1) / tl.d2; sIn = p * L; }
+  else { ph = 2; p = tl.ev ? tl.ev.s / L : 1; sIn = p * L; done = !tl.ev; if (tl.ev) evT = t - tl.d0 - tl.d1 - tl.dPull; }
+  const time = performance.now() / 1000;
+  const anim = A.playing && !reduce;
+  const tt = anim ? time : 0;
+
+  /* sky */
+  const sk = ctx.createLinearGradient(0, 0, 0, m.y0);
+  sk.addColorStop(0, c.sky1); sk.addColorStop(1, c.sky2);
+  ctx.fillStyle = sk; ctx.fillRect(0, 0, A.W, m.y0 + 2);
+  if (A.dark) {
+    A.stars.forEach(([x, y, r, ph2]) => { ctx.globalAlpha = .45 + .4 * Math.sin(tt * 1.5 + ph2); ctx.fillStyle = '#dfe8f5'; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); });
+    ctx.globalAlpha = 1; ctx.fillStyle = '#e9eef7'; ctx.beginPath(); ctx.arc(A.W * .5, m.y0 * .2, 13, 0, 7); ctx.fill();
+    ctx.fillStyle = c.sky1; ctx.beginPath(); ctx.arc(A.W * .5 + 6, m.y0 * .2 - 4, 12, 0, 7); ctx.fill();
+  } else {
+    ctx.fillStyle = 'rgba(255,214,120,.9)'; ctx.beginPath(); ctx.arc(A.W * .5, m.y0 * .2, 15, 0, 7); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.75)';
+    [[.2, .18], [.55, .1], [.38, .3]].forEach(([fx, fy], i) => { const x = ((fx * A.W + tt * (6 + i * 3)) % (A.W + 120)) - 60, y = fy * m.y0 + 10; ctx.beginPath(); ctx.ellipse(x, y, 34, 8, 0, 0, 7); ctx.ellipse(x + 16, y - 5, 20, 7, 0, 0, 7); ctx.fill(); });
+  }
+
+  /* ground with strata */
+  const surfPts = [];
+  const nS = 240;
+  for (let i = 0; i <= nS; i++) { const x = m.xL + (m.xR - m.xL) * i / nS; surfPts.push([m.sx(x), m.sy(g.zSurf(x))]); }
+  ctx.save();
+  ctx.beginPath(); ctx.moveTo(0, A.H); surfPts.forEach(([x, y]) => ctx.lineTo(x, y)); ctx.lineTo(A.W, A.H); ctx.closePath(); ctx.clip();
+  const bands = [[c.soil0, 0], [c.soil1, Math.min(1.2, g.Dd * .08)], [c.soil2, g.Dd * .45], [c.soil3, g.Dd * 1.05]];
+  bands.forEach(([col, z], i) => { ctx.fillStyle = col; const y = i === 0 ? 0 : m.sy(-z); ctx.fillRect(0, y, A.W, A.H - y); });
+  ctx.fillStyle = c.dot; A.dots.forEach(([x, y, r]) => { ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); });
+  ctx.restore();
+  // grass
+  ctx.strokeStyle = c.grass; ctx.lineWidth = 3; ctx.beginPath();
+  let pen = false;
+  for (let i = 0; i <= nS; i++) { const x = m.xL + (m.xR - m.xL) * i / nS; const on = !(x > g.xE1 && x < g.xE2); const [sx, sy] = surfPts[i]; if (on) { pen ? ctx.lineTo(sx, sy) : ctx.moveTo(sx, sy); pen = true; } else pen = false; }
+  ctx.stroke();
+
+  /* river or road */
+  if (g.river) {
+    const wl = m.sy(g.waterLvl);
+    ctx.save();
+    ctx.beginPath();
+    const a = m.sx(g.xE1), b = m.sx(g.xE2);
+    ctx.moveTo(a - 2, wl);
+    for (let x = a; x <= b; x += 4) ctx.lineTo(x, wl + Math.sin(x * .06 + tt * 2.2) * 1.6);
+    ctx.lineTo(b + 2, wl);
+    for (let i = nS; i >= 0; i--) { const wx = m.xL + (m.xR - m.xL) * i / nS; if (wx >= g.xE1 && wx <= g.xE2) ctx.lineTo(surfPts[i][0], surfPts[i][1]); }
+    ctx.closePath();
+    const wg = ctx.createLinearGradient(0, wl, 0, m.sy(-g.obsDepth));
+    wg.addColorStop(0, c.water1); wg.addColorStop(1, c.water2);
+    ctx.fillStyle = wg; ctx.globalAlpha = .92; ctx.fill(); ctx.globalAlpha = 1;
+    ctx.restore();
+    // boat
+    const bw = Math.max(26, (b - a) * .08), span = b - a - bw - 20;
+    if (span > 10) {
+      const bx = a + 10 + ((tt * 9) % (2 * span) < span ? (tt * 9) % span : span - (tt * 9) % span);
+      const by = wl - 2 + Math.sin(tt * 2) * 1.2;
+      ctx.fillStyle = A.dark ? '#c9d3dc' : '#f4f1ea'; ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + bw, by); ctx.lineTo(bx + bw * .82, by + 6); ctx.lineTo(bx + bw * .12, by + 6); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = c.accent; ctx.fillRect(bx + bw * .35, by - 8, bw * .28, 8);
+    }
+    // reeds
+    ctx.strokeStyle = c.grass; ctx.lineWidth = 1.5;
+    [g.xE1 - 1.5, g.xE2 + 1.5].forEach((x0, k) => { const X = m.sx(x0); for (let i = 0; i < 5; i++) { const xx = X + (k ? i * 3 : -i * 3); ctx.beginPath(); ctx.moveTo(xx, m.y0); ctx.quadraticCurveTo(xx + Math.sin(tt + i) * 2, m.y0 - 7, xx + Math.sin(tt * 1.3 + i) * 3, m.y0 - 13 - i % 2 * 3); ctx.stroke(); } });
+  } else {
+    const a = m.sx(g.xE1), b = m.sx(g.xE2), y = m.y0;
+    ctx.fillStyle = A.dark ? '#5b5348' : '#b9ab90';
+    ctx.beginPath(); ctx.moveTo(a - 14, y); ctx.lineTo(a, y - 5); ctx.lineTo(b, y - 5); ctx.lineTo(b + 14, y); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = c.asphalt; ctx.fillRect(a + 6, y - 9, b - a - 12, 5);
+    ctx.fillStyle = '#e8e2c8';
+    const mid = (a + b) / 2; ctx.fillRect(mid - 6, y - 10, 12, 1.4);
+    // street lights
+    [a + 3, b - 3].forEach(x => { ctx.strokeStyle = A.dark ? '#9aa4ad' : '#59626b'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y - 5); ctx.lineTo(x, y - 40); ctx.lineTo(x + (x < mid ? 9 : -9), y - 40); ctx.stroke();
+      if (A.dark) { const lg = ctx.createRadialGradient(x + (x < mid ? 9 : -9), y - 38, 1, x + (x < mid ? 9 : -9), y - 38, 34); lg.addColorStop(0, 'rgba(255,214,140,.55)'); lg.addColorStop(1, 'rgba(255,214,140,0)'); ctx.fillStyle = lg; ctx.beginPath(); ctx.arc(x + (x < mid ? 9 : -9), y - 38, 34, 0, 7); ctx.fill(); } });
+    // cars
+    const roadW = b - a - 16;
+    const cars = [[1, 0, c.accent, 26], [-1, .45, c.steel, 32], [1, .7, A.dark ? '#d7dde3' : '#5a646e', 22]];
+    cars.forEach(([dir, off, col, v]) => {
+      if (roadW < 30) return;
+      const cw = Math.min(30, roadW * .25);
+      let u = ((tt * v / Math.max(60, roadW) + off) % 1);
+      const x = dir > 0 ? a + 8 + u * (roadW - cw) : b - 8 - cw - u * (roadW - cw);
+      const yy = y - 9 - (dir > 0 ? 9 : 7);
+      ctx.globalAlpha = Math.min(1, Math.min(u, 1 - u) * 8);
+      ctx.fillStyle = col; roundRect(x, yy, cw, 7, 2.5); ctx.fill();
+      roundRect(x + cw * .22, yy - 5, cw * .5, 6, 2.5); ctx.fill();
+      ctx.fillStyle = A.dark ? '#8fb7d6' : '#cfe2ef'; ctx.fillRect(x + cw * .28, yy - 3.5, cw * .38, 3);
+      ctx.fillStyle = '#20252a'; [x + cw * .22, x + cw * .78].forEach(wx => { ctx.beginPath(); ctx.arc(wx, yy + 7, 2.4, 0, 7); ctx.fill(); });
+      if (A.dark) { ctx.fillStyle = 'rgba(255,230,160,.9)'; ctx.fillRect(dir > 0 ? x + cw - 1 : x - 1, yy + 2, 2, 2); }
+      ctx.globalAlpha = 1;
+    });
+  }
+
+  /* required cover line */
+  const covZ = -(g.obsDepth + R.I.cover);
+  ctx.setLineDash([5, 4]); ctx.strokeStyle = c.bad; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(m.sx(g.xE1), m.sy(covZ)); ctx.lineTo(m.sx(g.xE2), m.sy(covZ)); ctx.stroke(); ctx.setLineDash([]);
+
+  /* planned path */
+  ctx.setLineDash([3, 5]); ctx.globalAlpha = .55;
+  strokePath(0, L, 1.3, c['scene-ink'], 'butt');
+  ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+  /* drilling states */
+  const pilotS = ph === 0 ? p * L : L;
+  const reamS = ph === 0 ? L : ph === 1 ? L - p * L : 0; // reamed from exit back to reamS
+  // pilot hole
+  strokePath(0, pilotS, 2.4, A.dark ? '#a98d63' : '#6b5232');
+  // reamed hole
+  if (ph >= 1) strokePath(reamS, L, A.hw, c.hole);
+  // frac-out
+  const fail = R.frac.failAt;
+  let fracVis = null;
+  if (fail.length && (ph > 0 || pilotS >= fail[0])) fracVis = fail[0];
+  if (fracVis != null) drawFrac(fracVis, ph === 0 ? (pilotS - fracVis) / L * 6 : 9, tt);
+  // drill string (pilot or ream or pull)
+  const headS = ph === 0 ? pilotS : ph === 1 ? reamS : L - sIn;
+  strokePath(0, headS, 1.6, A.dark ? '#cfd6dc' : '#4a525a', 'butt');
+
+  /* pipe in hole and on ground */
+  let pipeCol = steel ? c.pipeSteel : c.pipePE;
+  const Tnow = ph === 2 ? Tat(sIn) : 0;
+  if (!steel && ph === 2 && Tnow > R.pe.SPS) pipeCol = c.warn;
+  const rollY = m.y0;
+  const exitX = m.sx(g.xExit);
+  const strLen = R.C.Lstring;
+  let headPipeS = L - sIn, tailOffset = 0, broken = false, brkS = 0, evP = 0;
+  if (tl.ev && evT >= 0) {
+    evP = Math.min(1, evT / 1.2);
+    if (tl.ev.type === 'break') { broken = true; brkS = headPipeS + Math.max(R.P.D * 25, L * .012); tailOffset = 6 * (1 - Math.exp(-evT * 3)) / Math.max(1, A.map.kx); }
+  }
+  if (ph === 2) {
+    const tailStart = broken ? brkS + 2.5 / A.map.kx * 3 + tailOffset : headPipeS;
+    // in-hole pipe
+    strokePath(tailStart, L, A.pw, pipeCol, 'butt');
+    if (broken) {
+      const stubEnd = brkS;
+      const fly = Math.min(L * .05, evT * L * .02);
+      strokePath(Math.max(0, headPipeS - fly), Math.max(0, stubEnd - fly), A.pw, c.bad, 'butt');
+    }
+    // weld joints
+    ctx.fillStyle = A.dark ? '#5d6670' : '#cfd5da';
+    const J = steel ? R.I.joint : 12;
+    for (let k = 1; headPipeS + k * J < L; k++) {
+      const s = headPipeS + k * J; if (broken && s < brkS + 1) continue;
+      const q = ptAt(s); const len = Math.hypot(q.dx, q.dy) || 1; const nx = -q.dy / len, ny = q.dx / len;
+      ctx.strokeStyle = steel ? (A.dark ? '#7e8a95' : '#8e979f') : 'rgba(0,0,0,.35)'; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(q.x + nx * A.pw / 2, q.y + ny * A.pw / 2); ctx.lineTo(q.x - nx * A.pw / 2, q.y - ny * A.pw / 2); ctx.stroke();
+    }
+  }
+  // pipe string on ground (exit side)
+  const remain = ph === 2 ? strLen - sIn : strLen;
+  const strEndX = exitX + remain * A.map.kx;
+  // rollers
+  ctx.fillStyle = A.dark ? '#7b858f' : '#4d555d';
+  const rollStep = Math.max(16, 12 * A.map.kx);
+  for (let x = exitX + 8; x < A.W + 10; x += rollStep) { ctx.beginPath(); ctx.arc(x, rollY - 3, 2.6, 0, 7); ctx.fill(); ctx.fillRect(x - .8, rollY - 3, 1.6, 3); }
+  ctx.strokeStyle = pipeCol; ctx.lineWidth = A.pw; ctx.lineCap = 'butt';
+  ctx.beginPath(); ctx.moveTo(exitX, rollY - 3 - A.pw / 2 + 1); ctx.lineTo(Math.min(strEndX, A.W + 20), rollY - 3 - A.pw / 2 + 1); ctx.stroke();
+  // joints on the ground string
+  ctx.strokeStyle = steel ? (A.dark ? '#7e8a95' : '#8e979f') : 'rgba(0,0,0,.35)'; ctx.lineWidth = 1.2;
+  const J2 = steel ? R.I.joint : 12;
+  const phase0 = ph === 2 ? (sIn % J2) : 0;
+  for (let d = J2 - phase0; d < remain; d += J2) { const x = exitX + d * A.map.kx; if (x > A.W) break; ctx.beginPath(); ctx.moveTo(x, rollY - 3 - A.pw + 1); ctx.lineTo(x, rollY - 2); ctx.stroke(); }
+
+  /* tools at head */
+  if (ph === 0) drawBit(ptAt(pilotS), tt);
+  if (ph === 1) drawReamer(ptAt(reamS), tt, A.hw);
+  if (ph === 2) drawReamer(ptAt(broken ? Math.max(0, headPipeS - Math.min(L * .05, evT * L * .02)) : headPipeS), tt, A.hw * .9);
+
+  /* rig */
+  drawRig(tt, ph, p, tl.ev && evT >= 0 && tl.ev.type === 'stall');
+
+  /* break FX */
+  if (broken) {
+    const q = ptAt(brkS);
+    ctx.fillStyle = `rgba(255,${120 + Math.round(80 * Math.random())},40,${1 - evP * .6})`;
+    for (let i = 0; i < 14; i++) { const a = (i / 14) * 6.28 + evT * 3, r = 4 + evT * 26 * ((i % 3) + 1) / 3; if (evT < 1.6) { ctx.beginPath(); ctx.arc(q.x + Math.cos(a) * r, q.y + Math.sin(a) * r * .6, 1.6, 0, 7); ctx.fill(); } }
+    ctx.strokeStyle = c.bad; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(q.x, q.y, 10 + 6 * Math.sin(time * 6), 0, 7); ctx.stroke();
+    if (evT < .35) { ctx.fillStyle = `rgba(220,40,30,${.25 * (1 - evT / .35)})`; ctx.fillRect(0, 0, A.W, A.H); }
+  }
+
+  /* labels */
+  drawLabels(R);
+  drawInsets(R);
+
+  /* HUD + timeline */
+  hud(ph, p, sIn, Tnow, tl, evT, done, pilotS, fracVis);
+  for (let i = 0; i < 3; i++) $('tl' + i).style.width = (i < ph ? 100 : i === ph ? Math.min(100, p * 100) : 0) + '%';
+  // chart marker
+  const mk = document.getElementById('mkPull');
+  if (mk && pullScale) {
+    if (ph === 2) { mk.setAttribute('cx', pullScale.sx(sIn)); mk.setAttribute('cy', pullScale.sy(tf(Tnow))); }
+    else { mk.setAttribute('cx', -20); mk.setAttribute('cy', -20); }
+  }
+}
+function roundRect(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+function drawBit(q, tt) {
+  const len = Math.hypot(q.dx, q.dy) || 1, ux = q.dx / len, uy = q.dy / len;
+  ctx.fillStyle = A.col.accent;
+  ctx.beginPath(); ctx.moveTo(q.x + ux * 8, q.y + uy * 8); ctx.lineTo(q.x - uy * 4, q.y + ux * 4); ctx.lineTo(q.x + uy * 4, q.y - ux * 4); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,.7)'; ctx.lineWidth = 1;
+  const r = 5; ctx.beginPath(); ctx.arc(q.x, q.y, r + 2 * Math.abs(Math.sin(tt * 8)), 0, 7); ctx.stroke();
+}
+function drawReamer(q, tt, w) {
+  const r = w / 2 + 2;
+  ctx.fillStyle = A.col.accent; ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, 7); ctx.fill();
+  ctx.strokeStyle = A.col.ink; ctx.lineWidth = 1.2;
+  for (let i = 0; i < 6; i++) { const a = tt * 6 + i * Math.PI / 3; ctx.beginPath(); ctx.moveTo(q.x + Math.cos(a) * r * .3, q.y + Math.sin(a) * r * .3); ctx.lineTo(q.x + Math.cos(a) * (r + 2), q.y + Math.sin(a) * (r + 2)); ctx.stroke(); }
+}
+function drawFrac(s, age, tt) {
+  const R = RES, g = R.geo, m = A.map;
+  const p = R.geo.pts[Math.round(s / g.L * (g.pts.length - 1))];
+  const x = m.sx(p.x), yP = m.sy(p.z), ySurf = m.sy(g.zSurf(p.x)), yTop = g.river ? m.sy(g.waterLvl) : m.y0;
+  const k = clamp(age, 0, 1);
+  // crack
+  ctx.strokeStyle = A.col.hole; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(x, yP); for (let i = 1; i <= 6; i++) { const yy = yP + (ySurf - yP) * i / 6 * k; ctx.lineTo(x + (i % 2 ? 3 : -3), yy); } ctx.stroke();
+  if (k >= 1) {
+    ctx.fillStyle = A.dark ? 'rgba(170,140,95,.75)' : 'rgba(139,104,60,.7)';
+    for (let i = 0; i < 9; i++) { const ph2 = (tt * .6 + i / 9) % 1; const yy = ySurf - (ySurf - yTop) * ph2; ctx.beginPath(); ctx.arc(x + Math.sin(i * 2 + tt) * 6 * ph2, yy, 3 + ph2 * 5, 0, 7); ctx.fill(); }
+    ctx.beginPath(); ctx.ellipse(x, yTop - 1, 12, 3, 0, 0, 7); ctx.fill();
+    label(x, yTop - 14, 'Frac-out', A.col.bad);
+  }
+}
+function drawRig(tt, ph, p, stall) {
+  const R = RES, m = A.map, c = A.col;
+  const q = ptAt(0.001), q2 = ptAt(R.geo.L * .01);
+  let ang = Math.atan2(q2.y - q.y, q2.x - q.x); // pointing into ground
+  const x0 = m.sx(0), y0 = m.y0;
+  const len = clamp(A.W * .1, 58, 120);
+  const ux = -Math.cos(ang), uy = -Math.sin(ang);
+  // ramp / rack (up-left from entry)
+  const ex = x0 + ux * len, ey = y0 + uy * len;
+  // base
+  ctx.fillStyle = A.dark ? '#3a4149' : '#3f464d';
+  roundRect(ex - 14, y0 - 9, (x0 - ex) + 18, 9, 3); ctx.fill();
+  // support legs
+  ctx.strokeStyle = A.dark ? '#7d8790' : '#59626b'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(ex + 6, ey + 2); ctx.lineTo(ex + 6, y0 - 8); ctx.stroke();
+  // rack
+  ctx.save(); ctx.translate(x0, y0); ctx.rotate(Math.atan2(uy, ux));
+  ctx.fillStyle = stall && Math.sin(performance.now() / 120) > 0 ? c.bad : c.rig;
+  roundRect(0, -5, len, 7, 2); ctx.fill();
+  ctx.fillStyle = 'rgba(0,0,0,.25)'; for (let i = 6; i < len; i += 7) ctx.fillRect(i, -5, 1.2, 7);
+  // carriage
+  let cpos = .5;
+  if (ph === 0) cpos = .15 + .7 * ((p * 12) % 1);
+  if (ph >= 1) cpos = .85 - .7 * ((p * 12) % 1);
+  if (stall) cpos = .5;
+  ctx.fillStyle = A.dark ? '#d9dee3' : '#2b3137'; roundRect(len * cpos - 7, -10, 14, 9, 2); ctx.fill();
+  ctx.restore();
+  // cab & power unit
+  ctx.fillStyle = c.rig; roundRect(ex - 26, y0 - 26, 22, 17, 3); ctx.fill();
+  ctx.fillStyle = A.dark ? '#8fb7d6' : '#cfe2ef'; ctx.fillRect(ex - 22, y0 - 23, 9, 6);
+  // mud tank
+  ctx.fillStyle = A.col.steel; roundRect(ex - 58, y0 - 18, 28, 18, 2); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fillRect(ex - 55, y0 - 15, 22, 2);
+  // entry pit + returns
+  ctx.fillStyle = A.col.hole; ctx.beginPath(); ctx.ellipse(x0 + 2, y0 + 1, 7, 3, 0, 0, 7); ctx.fill();
+  if (ph <= 1) for (let i = 0; i < 4; i++) { const ph2 = (tt * .9 + i / 4) % 1; ctx.globalAlpha = 1 - ph2; ctx.beginPath(); ctx.arc(x0 + 2 + Math.sin(i * 3 + tt) * 3, y0 - ph2 * 7, 1.6 + ph2 * 1.5, 0, 7); ctx.fill(); }
+  ctx.globalAlpha = 1;
+}
+function label(x, y, text, col) {
+  ctx.font = '600 11px "IBM Plex Sans", system-ui, sans-serif';
+  const w = ctx.measureText(text).width + 10;
+  ctx.fillStyle = A.col['scene-label']; roundRect(x - w / 2, y - 9, w, 17, 3); ctx.fill();
+  ctx.fillStyle = col || A.col['scene-ink']; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, x, y);
+}
+function drawLabels(R) {
+  const g = R.geo, m = A.map, c = A.col;
+  const a = m.sx(g.xE1), b = m.sx(g.xE2);
+  // width dimension
+  const yd = m.y0 - (g.river ? 30 : 56);
+  ctx.strokeStyle = c['scene-ink']; ctx.lineWidth = 1; ctx.globalAlpha = .75;
+  ctx.beginPath(); ctx.moveTo(a, yd); ctx.lineTo(b, yd); ctx.moveTo(a, yd - 4); ctx.lineTo(a, yd + 4); ctx.moveTo(b, yd - 4); ctx.lineTo(b, yd + 4); ctx.stroke();
+  ctx.globalAlpha = 1;
+  label((a + b) / 2, yd - 12, `${R.I.name} · lebar ${nf(R.I.W, 0)} m`);
+  // cover dimension at middle
+  const xm = (g.xE1 + g.xE2) / 2, X = m.sx(xm);
+  const yS = m.sy(g.zSurf(xm)), yP = m.sy(g.zc + R.P.Dc / 2);
+  ctx.strokeStyle = c.bad; ctx.beginPath(); ctx.moveTo(X + 18, yS); ctx.lineTo(X + 18, yP); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(X + 14, yS); ctx.lineTo(X + 22, yS); ctx.moveTo(X + 14, yP); ctx.lineTo(X + 22, yP); ctx.stroke();
+  label(X + 18, (yS + yP) / 2, `cover ${nf(g.minCover, 1)} m`, c.bad);
+  // entry / exit
+  const W = A.W;
+  label(clamp(m.sx(0) + 6, 50, W - 50), m.y0 + 16, `Entry ${nf(H.deg(g.th1), 1)}°`);
+  label(clamp(m.sx(g.xExit), 50, W - 50), m.y0 + 16, `Exit ${nf(H.deg(g.th2), 1)}°`);
+  // depth
+  const xd = m.sx(g.xf1 + (g.xf2 - g.xf1) * .27);
+  label(xd, m.sy(g.zc) + 16, `−${nf(g.Dd, 1)} m · L ${nf(g.L, 0)} m`);
+  // entry/exit distance dims
+  ctx.strokeStyle = c['scene-ink']; ctx.globalAlpha = .55; ctx.setLineDash([2, 3]);
+  const yy = m.y0 + 32;
+  ctx.beginPath(); ctx.moveTo(m.sx(0), yy); ctx.lineTo(a, yy); ctx.moveTo(b, yy); ctx.lineTo(m.sx(g.xExit), yy); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+  label((m.sx(0) + a) / 2, yy, g.entryStatus === 'fail' ? `${nf(g.entryDist, 0)} m > tersedia ${nf(R.I.entryAvail, 0)} m` : `${nf(g.entryDist, 0)} m`, g.entryStatus === 'fail' ? c.bad : null);
+  label((b + m.sx(g.xExit)) / 2, yy, g.exitStatus === 'fail' ? `${nf(g.exitDist, 0)} m > tersedia ${nf(R.I.exitAvail, 0)} m` : `${nf(g.exitDist, 0)} m`, g.exitStatus === 'fail' ? c.bad : null);
+}
+
+function drawInsets(R) {
+  if (A.VE < 1.4 || A.W < 520) return;
+  const bw = Math.max(118, Math.min(260, A.W * .3)), bh = Math.min(104, A.map.y0 - 20);
+  if (bh < 56) return;
+  inset('entry', 8, 8, bw, bh);
+  inset('exit', A.W - 8 - bw, 8, bw, bh);
+}
+function inset(side, bx, by, bw, bh) {
+  const R = RES, g = R.geo, c = A.col, entry = side === 'entry';
+  const th = entry ? g.th1 : g.th2, Rr = entry ? g.R1 : g.R2;
+  const span = entry ? g.xf1 : g.xExit - g.xf2;
+  const x0 = entry ? -span * .08 - 2 : g.xf2 - span * .15 - 2, x1 = entry ? g.xf1 + span * .15 + 2 : g.xExit + span * .08 + 2;
+  const zT = g.Dd * .12 + .5, zBot = -g.Dd * 1.12;
+  const head = 18, k = Math.min((bw - 14) / (x1 - x0), (bh - head - 8) / (zT - zBot));
+  const ox = bx + 7 + ((bw - 14) - (x1 - x0) * k) / 2, oy = by + head + 2;
+  const sx = x => ox + (x - x0) * k, sy = z => oy + (zT - z) * k;
+  ctx.save();
+  ctx.fillStyle = c['scene-label']; roundRect(bx, by, bw, bh, 5); ctx.fill();
+  ctx.strokeStyle = c['scene-ink']; ctx.globalAlpha = .25; ctx.lineWidth = 1; ctx.stroke(); ctx.globalAlpha = 1;
+  ctx.font = '600 10.5px "IBM Plex Sans", system-ui, sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; ctx.fillStyle = c['scene-ink'];
+  ctx.fillText(`Detail ${side} · skala 1 : 1`, bx + 8, by + 13);
+  roundRect(bx + 1, by + head - 2, bw - 2, bh - head + 1, 4); ctx.clip();
+  // ground
+  ctx.fillStyle = c.soil1; ctx.globalAlpha = .55; ctx.fillRect(bx, sy(0), bw, bh); ctx.globalAlpha = 1;
+  ctx.strokeStyle = c.grass; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(bx, sy(0)); ctx.lineTo(bx + bw, sy(0)); ctx.stroke();
+  // path at true scale
+  ctx.strokeStyle = R.steel ? c.pipeSteel : c.pipePE; ctx.lineWidth = 2.2; ctx.beginPath();
+  let pen = false;
+  for (const p of g.pts) { if (p.x < x0 - 1 || p.x > x1 + 1) { pen = false; continue; } const X = sx(p.x), Y = sy(p.z); pen ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); pen = true; }
+  ctx.stroke();
+  // angle arc
+  const cx = sx(entry ? 0 : g.xExit), cy = sy(0), r = 24;
+  ctx.strokeStyle = c.accent; ctx.lineWidth = 1.6; ctx.beginPath();
+  if (entry) ctx.arc(cx, cy, r, 0, th); else ctx.arc(cx, cy, r, Math.PI - th, Math.PI);
+  ctx.stroke();
+  ctx.fillStyle = c.accent; ctx.font = '600 11px "IBM Plex Mono", ui-monospace, monospace';
+  ctx.textAlign = entry ? 'left' : 'right'; ctx.textBaseline = 'middle';
+  ctx.fillText(`${nf(H.deg(th), 1)}°`, cx + (entry ? r + 4 : -r - 4), cy + 7);
+  // radius label at curve
+  const sg = g.path.segs.find(s => s.k === (entry ? 'arcEntry' : 'arcExit'));
+  const [mx, mz] = sg.pos(sg.L / 2);
+  ctx.fillStyle = c['scene-ink']; ctx.font = '500 10.5px "IBM Plex Mono", ui-monospace, monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+  ctx.textBaseline = 'top';
+  ctx.fillText(`R ${nf(Rr, 0)} m`, clamp(sx(mx), bx + 30, bx + bw - 30), Math.min(sy(mz) + 6, by + bh - 14));
+  ctx.restore();
+}
+
+function hud(ph, p, sIn, Tnow, tl, evT, done, pilotS, fracVis) {
+  const R = RES, steel = R.steel;
+  $('hudPhase').textContent = done ? 'Pipa terpasang' : (tl.ev && evT >= 0) ? (tl.ev.type === 'break' ? 'Pipa putus' : 'Rig tidak kuat menarik') : PH[ph].label;
+  const al = $('alert');
+  if (ph === 0) {
+    const pt = R.frac.pts[Math.round(pilotS / R.geo.L * (R.frac.pts.length - 1))];
+    const pc = R.ph.pilotCurve, pi = Math.min(pc.length - 1, Math.round(pilotS / R.geo.L * (pc.length - 1)));
+    $('hudSub').textContent = `Bit di ${nf(pilotS, 0)} m dari entry · dorongan rig ±${nf(tf(pc[pi].T), 1)} t${fracVis != null ? ' · potensi frac-out' : ''}`;
+    $('hudMeterLbl').textContent = 'Tekanan lumpur di bit vs batas (Pmax/FK)';
+    const lim = pt.pmax != null ? pt.pmax / R.I.fracSF : null;
+    $('hudVal').textContent = `${nf(pt.preq, 0)} kPa`;
+    $('hudLim').textContent = lim != null ? `Batas ${nf(lim, 0)} kPa · rasio ${nf(pt.preq / lim, 2)}` : 'Dekat permukaan: tidak dievaluasi';
+    const sc = Math.max(pt.preq, lim || 0) * 1.25 || 1;
+    setMeter(pt.preq / sc, lim != null ? lim / sc : null, null, lim != null && pt.preq > lim);
+  } else if (ph === 1) {
+    const ps = R.ph.passes, lp = ps[ps.length - 1];
+    $('hudSub').textContent = `Reamer ${nf(R.C.Dream * 1000, 0)} mm (pass ${ps.length}) · tarikan rig ±${nf(tf(lp.T), 1)} t · torsi ±${nf(lp.torque / 1000, 1)} kN·m`;
+    $('hudMeterLbl').textContent = 'Kemajuan reaming';
+    $('hudVal').textContent = `${nf(p * 100, 0)}%`;
+    $('hudLim').textContent = `Volume lubang ${nf(R.C.Vhole, 1)} m³ · lumpur ±${nf(R.C.Vmud, 0)} m³`;
+    setMeter(p, null, null, false);
+  } else {
+    $('hudSub').textContent = `${nf(sIn, 0)} dari ${nf(R.geo.L, 0)} m pipa sudah masuk lubang`;
+    $('hudMeterLbl').textContent = 'Gaya tarik di kepala tarik';
+    $('hudVal').textContent = `${nf(tf(Tnow), 2)} t`;
+    const lims = steel ? [R.pull.rigCap] : [R.pe.SPS, Math.min(R.pe.Tbreak, Infinity)];
+    const sc = Math.max(R.pull.Tmax, R.pull.rigCap * (steel ? 1 : 0), ...(steel ? [] : [R.pe.Tbreak])) * 1.08;
+    if (steel) {
+      $('hudLim').textContent = `Rig ${nf(R.I.rigCap, 0)} t · tonase min. ${nf(tf(R.pull.rigNameplate), 1)} t`;
+      setMeter(Tnow / sc, R.pull.rigCap / sc, null, Tnow > R.pull.rigCap);
+    } else {
+      $('hudLim').textContent = `SPS ${nf(tf(R.pe.SPS), 1)} t · putus ${nf(tf(R.pe.Tbreak), 1)} t · rig ${nf(R.I.rigCap, 0)} t`;
+      setMeter(Tnow / sc, R.pe.SPS / sc, R.pe.Tbreak / sc, Tnow > R.pe.SPS);
+    }
+  }
+  if (tl.ev && evT >= 0) {
+    al.hidden = false;
+    al.innerHTML = tl.ev.type === 'break'
+      ? `PIPA PUTUS<small>Gaya tarik melampaui batas yield ${nf(tf(R.pe.Tbreak), 1)} t setelah ${nf(tl.ev.s, 0)} m tertarik. Kurangi hambatan lubang, pakai pipa lebih tebal (SDR lebih kecil), beri ballast, atau perpendek durasi tarik.</small>`
+      : `RIG TIDAK KUAT MENARIK<small>Gaya tarik melampaui kapasitas rig ${nf(R.I.rigCap, 0)} t setelah ${nf(tl.ev.s, 0)} m tertarik.</small>`;
+  } else al.hidden = true;
+}
+function setMeter(v, m1, m2, hot) {
+  const bar = $('hudBar');
+  bar.style.width = clamp(v * 100, 0, 100) + '%';
+  bar.style.background = hot ? 'var(--bad)' : 'var(--ok)';
+  const a = $('hudMark1'), b = $('hudMark2');
+  a.style.display = m1 == null ? 'none' : 'block'; if (m1 != null) a.style.left = clamp(m1 * 100, 0, 99.5) + '%';
+  a.style.background = m2 == null ? 'var(--bad)' : 'var(--warn)';
+  b.style.display = m2 == null ? 'none' : 'block'; if (m2 != null) b.style.left = clamp(m2 * 100, 0, 99.5) + '%';
+}
+
+/* =================== PDF REPORT =================== */
+let DL = null;
+(async () => {
+  try {
+    if (window.claude && window.claude.use) DL = await window.claude.use('downloads');
+  } catch (e) { DL = null; }
+})();
+$('btnPdf').hidden = false;
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+async function saveFile(data, fname, type) {
+  // Standalone use (opened outside Claude). On iPhone/iPad use the Share sheet
+  // (Save to Files, WhatsApp, Mail); elsewhere an ordinary download link.
+  const blob = new Blob([data], { type });
+  if (IS_IOS && navigator.canShare) {
+    try {
+      const file = new File([blob], fname, { type });
+      if (navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: fname }); return 'shared'; }
+    } catch (e) { if (e && e.name === 'AbortError') return 'cancel'; }
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = fname; a.rel = 'noopener';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+  return 'downloaded';
+}
+const browserDownload = (bytes, fname) => saveFile(bytes, fname, 'application/pdf');
+
+function readProj() {
+  const d = $('docDate').value;
+  let dateTxt = d;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(d)) { const [y, m, dd] = d.split('-'); dateTxt = `${dd}/${m}/${y}`; }
+  return {
+    name: $('projName').value.trim(), client: $('projClient').value.trim(), docNo: $('docNo').value.trim(),
+    rev: $('docRev').value.trim() || '0', date: dateTxt, prep: $('prepBy').value.trim(), chk: $('chkBy').value.trim()
+  };
+}
+function projUI() {
+  const p = readProj();
+  const bits = [p.name || 'Proyek belum diberi nama', p.docNo ? 'No. ' + p.docNo : '', 'Rev. ' + p.rev, SC && SC.active ? 'Skenario: ' + SC.active : ''].filter(Boolean);
+  $('projLine').textContent = bits.join(' · ');
+}
+
+function snapshotCanvas() {
+  const c = document.createElement('canvas');
+  c.width = cv.width; c.height = cv.height;
+  const x = c.getContext('2d'); x.fillStyle = '#ffffff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(cv, 0, 0);
+  return c;
+}
+function svgInline(svg) {
+  if (!svg) return null;
+  const vb = svg.viewBox.baseVal, w = vb.width, h = vb.height;
+  const cl = svg.cloneNode(true);
+  const src = svg.querySelectorAll('*'), dst = cl.querySelectorAll('*');
+  const props = ['fill', 'stroke', 'stroke-width', 'stroke-dasharray', 'opacity', 'font-size', 'font-family', 'font-weight'];
+  src.forEach((el, i) => {
+    const cs = getComputedStyle(el);
+    dst[i].setAttribute('style', props.map(p => `${p}:${cs.getPropertyValue(p)}`).join(';'));
+  });
+  cl.querySelectorAll('.mk').forEach(n => n.remove());
+  cl.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  cl.setAttribute('width', w * 2); cl.setAttribute('height', h * 2);
+  const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  bg.setAttribute('x', 0); bg.setAttribute('y', 0); bg.setAttribute('width', w); bg.setAttribute('height', h); bg.setAttribute('fill', '#ffffff');
+  cl.insertBefore(bg, cl.firstChild);
+  return { str: new XMLSerializer().serializeToString(cl), w: w * 2, h: h * 2 };
+}
+function toJpeg(canvas) {
+  return new Promise(res => {
+    try {
+      canvas.toBlob(b => { if (!b) return res(null); b.arrayBuffer().then(a => res({ bytes: new Uint8Array(a), w: canvas.width, h: canvas.height }), () => res(null)); }, 'image/jpeg', .9);
+    } catch (e) { res(null); }
+  });
+}
+async function svgJpeg(s) {
+  if (!s) return null;
+  try {
+    const img = new Image();
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s.str);
+    await img.decode();
+    const c = document.createElement('canvas'); c.width = s.w; c.height = s.h;
+    const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height);
+    return await toJpeg(c);
+  } catch (e) { return null; }
+}
+const cellText = el => (el.innerText || el.textContent || '').replace(/[ \t]+/g, ' ').replace(/\n\s*\n/g, '\n').trim();
+function domTable(el) {
+  const trs = [...el.querySelectorAll('tr')];
+  const head = trs.length && trs[0].querySelector('th') ? [...trs[0].children].map(cellText) : null;
+  const rows = [];
+  trs.slice(head ? 1 : 0).forEach(tr => {
+    if (tr.classList.contains('grp')) { rows.push({ grp: cellText(tr) }); return; }
+    rows.push({ cells: [...tr.children].map(td => ({ t: cellText(td), num: td.classList.contains('n'), span: td.colSpan || 1, bold: !!td.querySelector('b') && cellText(td) === cellText(td.querySelector('b')) })) });
+  });
+  return { head, rows };
+}
+function inputTable() {
+  const rows = [];
+  document.querySelectorAll('#frm fieldset').forEach(fs => {
+    if (fs.id === 'fsProj' || fs.id === 'fsScen') return;
+    const lg = fs.querySelector('legend').childNodes[0].textContent.trim();
+    rows.push({ grp: lg });
+    fs.querySelectorAll('.seg').forEach(seg => {
+      const ch = seg.querySelector('input:checked');
+      if (ch) rows.push({ cells: [{ t: seg.getAttribute('aria-label') }, { t: seg.querySelector(`label[for="${ch.id}"]`).textContent }, { t: '' }] });
+    });
+    fs.querySelectorAll('.f').forEach(f => {
+      if (f.closest('[hidden]')) return;
+      const lab = f.querySelector('label'), small = lab.querySelector('small');
+      const name = [...lab.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim();
+      const ctl = f.querySelector('input,select'); if (!ctl) return;
+      let v = ctl.tagName === 'SELECT' ? ctl.options[ctl.selectedIndex].text : ctl.type === 'range' ? nf(+ctl.value, 1) + '×' : ctl.value;
+      if (UNITS[ctl.id]) v += ' ' + unitOf(ctl.id);
+      rows.push({ cells: [{ t: name }, { t: v }, { t: small ? small.textContent : '' }] });
+    });
+  });
+  return { head: ['Parameter', 'Nilai', 'Keterangan'], rows };
+}
+
+async function buildPdf() {
+  const R = RES, I = R.I, PJ = readProj();
+  /* --- capture visuals in light theme --- */
+  const root = document.documentElement, prevTheme = root.getAttribute('data-theme');
+  root.setAttribute('data-theme', 'light'); readColors();
+  const saveT = A.t, saveP = A.playing, tl = timeline();
+  A.t = tl.ev ? tl.d0 + tl.d1 + tl.dPull + 1.6 : tl.d0 + tl.d1 + tl.d2 + .3; A.playing = false;
+  draw();
+  const profCanvas = snapshotCanvas();
+  const svgs = ['chPull', 'chStress', 'chFrac'].map(id => svgInline($(id).querySelector('svg')));
+  if (prevTheme == null) root.removeAttribute('data-theme'); else root.setAttribute('data-theme', prevTheme);
+  readColors(); A.t = saveT; A.playing = saveP;
+  const prof = await toJpeg(profCanvas);
+  const [imPull, imStress, imFrac] = await Promise.all(svgs.map(svgJpeg));
+
+  /* --- layout helpers (mm) --- */
+  const D = new PDFW.Doc();
+  const INK = [20, 32, 43], MUT = [86, 99, 111], LINE = [200, 209, 216], ACC = [196, 101, 14], STEEL = [44, 95, 130];
+  const OK = [45, 122, 76], BAD = [189, 58, 43], WARN = [166, 114, 6];
+  const ML = 16, CW = 178, TOP = 22, BOT = 297 - 16;
+  let y = 0;
+  const lh = s => s * .3528 * 1.32;
+  const newPage = () => { D.addPage(); y = TOP; };
+  const ensure = h => { if (y + h > BOT) newPage(); };
+  const wrap = (text, w, size, bold) => {
+    const out = [];
+    String(text).split('\n').forEach(par => {
+      const words = par.split(' '); let cur = '';
+      words.forEach(wd => {
+        const t = cur ? cur + ' ' + wd : wd;
+        if (D.tw(t, size, bold) <= w || !cur) cur = t; else { out.push(cur); cur = wd; }
+        while (D.tw(cur, size, bold) > w && cur.length > 4) { // hard-break very long tokens
+          let k = cur.length - 1; while (k > 1 && D.tw(cur.slice(0, k), size, bold) > w) k--;
+          out.push(cur.slice(0, k)); cur = cur.slice(k);
+        }
+      });
+      out.push(cur);
+    });
+    return out;
+  };
+  const heading = (t) => { ensure(48); y += 3; D.text(t, ML, y + 5, { size: 13, bold: true }); D.line(ML, y + 7.5, ML + CW, y + 7.5, { color: INK, lw: .45 }); y += 12; };
+  const sub = (t) => { ensure(10); D.text(t, ML, y + 4, { size: 10, bold: true, color: STEEL }); y += 7; };
+  const para = (t, o = {}) => {
+    const s = o.size || 8.6, L = wrap(t, o.w || CW - (o.indent || 0), s, o.bold);
+    L.forEach((ln, i) => { ensure(lh(s)); if (o.bullet && i === 0) D.text('•', ML, y + lh(s) * .78, { size: s, color: o.color || INK }); D.text(ln, ML + (o.indent || 0), y + lh(s) * .78, { size: s, bold: o.bold, color: o.color || INK }); y += lh(s); });
+    y += o.after == null ? 2 : o.after;
+  };
+  const image = (im, maxH = 95) => {
+    if (!im) return;
+    let w = CW, h = w * im.h / im.w;
+    if (h > maxH) { h = maxH; w = h * im.w / im.h; }
+    ensure(h + 3);
+    const n = D.addJpeg(im.bytes, im.w, im.h);
+    D.image(n, ML + (CW - w) / 2, y, w, h);
+    D.rect(ML + (CW - w) / 2, y, w, h, { stroke: LINE, lw: .25 });
+    y += h + 3;
+  };
+  const statusColor = t => /Tidak OK|Kurang|Tidak muat/.test(t) ? BAD : /tipis/.test(t) ? WARN : /^(OK|Sesuai desain|Cukup)$/.test(t) || /\b(OK|Cukup)$/.test(t) ? OK : null;
+  function table(tb, o = {}) {
+    const size = o.size || 7.6, pad = 1.3, L = lh(size);
+    const nCol = tb.head ? tb.head.length : Math.max(...tb.rows.filter(r => r.cells).map(r => r.cells.reduce((a, c) => a + (c.span || 1), 0)));
+    // natural widths
+    const nat = new Array(nCol).fill(10);
+    const consider = (i, t, bold) => { const w = Math.min(o.cap || 74, D.tw(t, size, bold) + 2 * pad + .5); if (w > nat[i]) nat[i] = w; };
+    if (tb.head) tb.head.forEach((t, i) => consider(i, t, true));
+    tb.rows.forEach(r => { if (!r.cells) return; let ci = 0; r.cells.forEach(c => { if ((c.span || 1) === 1) String(c.t).split('\n').forEach(part => consider(ci, part, c.bold)); ci += c.span || 1; }); });
+    const sum = nat.reduce((a, b) => a + b, 0);
+    const colW = o.widths ? o.widths.map(f => f * CW) : nat.map(w => w * CW / sum);
+    const numCol = new Array(nCol).fill(false);
+    tb.rows.forEach(r => { if (!r.cells) return; let ci = 0; r.cells.forEach(c => { if (c.num && (c.span || 1) === 1) numCol[ci] = true; ci += c.span || 1; }); });
+    const drawHead = () => {
+      if (!tb.head) return;
+      const lines = tb.head.map((t, i) => wrap(t, colW[i] - 2 * pad, size, true));
+      const h = Math.max(...lines.map(l => l.length)) * L + 2 * pad;
+      D.rect(ML, y, CW, h, { fill: INK });
+      let x = ML;
+      lines.forEach((ls, i) => { ls.forEach((ln, k) => D.text(ln, numCol[i] ? x + colW[i] - pad : x + pad, y + pad + L * (k + .78), { size, bold: true, color: [255, 255, 255], align: numCol[i] ? 'right' : 'left' })); x += colW[i]; });
+      y += h;
+    };
+    ensure(14); drawHead();
+    tb.rows.forEach((r, ri) => {
+      if (r.grp) {
+        const h = L + 2 * pad + 1;
+        if (y + h + L > BOT) { newPage(); drawHead(); }
+        D.rect(ML, y, CW, h, { fill: [232, 238, 243] });
+        D.text(r.grp, ML + pad, y + pad + L * .9, { size: size + .6, bold: true, color: STEEL });
+        y += h; return;
+      }
+      let ci = 0;
+      const cells = r.cells.map(c => { const span = c.span || 1; const w = colW.slice(ci, ci + span).reduce((a, b) => a + b, 0); const cell = { ...c, x0: ML + colW.slice(0, ci).reduce((a, b) => a + b, 0), w, num: c.num && span === 1 ? true : c.num, col: ci }; ci += span; cell.lines = wrap(c.t, w - 2 * pad, size, c.bold); return cell; });
+      const h = Math.max(1, ...cells.map(c => c.lines.length)) * L + 2 * pad;
+      if (y + h > BOT) { newPage(); drawHead(); }
+      if (o.zebra && ri % 2) D.rect(ML, y, CW, h, { fill: [246, 248, 250] });
+      cells.forEach(c => {
+        const sc = statusColor(c.t);
+        c.lines.forEach((ln, k) => {
+          const right = c.num || numCol[c.col] && (c.w === colW[c.col]);
+          D.text(ln, right ? c.x0 + c.w - pad : c.x0 + pad, y + pad + L * (k + .78), { size, bold: c.bold, color: sc || (k > 0 && !c.num && o.mutedNotes ? MUT : INK), align: right ? 'right' : 'left' });
+        });
+      });
+      D.line(ML, y + h, ML + CW, y + h, { color: LINE, lw: .2 });
+      y += h;
+    });
+    y += 4;
+  }
+
+  /* --- cover --- */
+  newPage();
+  D.rect(0, 0, 210, 50, { fill: INK });
+  D.text('PERHITUNGAN DESAIN · HORIZONTAL DIRECTIONAL DRILLING', ML, 15, { size: 8, bold: true, color: [240, 152, 60] });
+  D.text('Perhitungan HDD Crossing', ML, 27, { size: 22, bold: true, color: [255, 255, 255] });
+  const ttl = wrap(PJ.name || I.name, CW, 12, false);
+  ttl.slice(0, 2).forEach((ln, i) => D.text(ln, ML, 36 + i * 5.5, { size: 12, color: [214, 223, 230] }));
+  y = 58;
+  const pipeTxt = R.steel ? `Baja API 5L ${R.P.grade}, NPS ${R.P.nps} ${R.P.schLabel} (OD ${nf(R.P.D * 1000, 1)} mm, t ${nf(R.P.t * 1000, 2)} mm)` : `PE ${R.P.matKey} OD ${nf(R.P.D * 1000, 0)} mm SDR ${nf(R.P.SDR, R.P.SDR % 1 ? 1 : 0)} (t ${nf(R.P.t * 1000, 1)} mm)`;
+  table({ head: null, rows: [
+    ['Proyek', PJ.name || '–'], ['Klien / pemilik', PJ.client || '–'],
+    ['Crossing', `${I.name} (${R.geo.river ? 'sungai' : 'jalan'}, lebar ${nf(I.W, 0)} m)`], ['Pipa', pipeTxt],
+    ['Metode', R.steel ? 'PRCI (pull load & tegangan instalasi), ASME B31.8 (hydrotest & operasi)' : 'ASTM F1962 & PPI Handbook Bab 12 (pull load, Safe Pull Strength, collapse), ISO 4437'],
+    ...(SC && SC.active ? [['Skenario', SC.active]] : []), ['No. dokumen', PJ.docNo || '–'], ['Revisi', PJ.rev], ['Tanggal', PJ.date || '–'], ['Disusun oleh', PJ.prep || '–'], ['Diperiksa oleh', PJ.chk || '–']
+  ].map(([a, b]) => ({ cells: [{ t: a, bold: true }, { t: b }] })) }, { widths: [.24, .76], size: 8.6 });
+  const nFail = R.checks.filter(c => !c.ok).length;
+  ensure(14);
+  D.rect(ML, y, CW, 11, { fill: nFail ? [247, 220, 216] : [220, 239, 227], stroke: nFail ? BAD : OK, lw: .4 });
+  D.text(nFail ? `${nFail} pemeriksaan tidak memenuhi kriteria` : 'Semua pemeriksaan memenuhi kriteria', ML + 4, y + 7.2, { size: 11, bold: true, color: nFail ? BAD : OK });
+  y += 15;
+  const g = R.geo, pl = R.pull;
+  const kp = [
+    ['Panjang HDD', nf(g.L, 1) + ' m'], ['Kedalaman lintasan', nf(g.Dd, 1) + ' m'], ['Radius lengkung', nf(Math.min(g.R1, g.R2), 0) + ' m'],
+    ['Sudut entry / exit', `${nf(H.deg(g.th1), 1)}° / ${nf(H.deg(g.th2), 1)}°`], ['Jarak entry / exit dari tepi', `${nf(g.entryDist, 0)} / ${nf(g.exitDist, 0)} m`], ['Pull load maksimum', nf(tf(pl.Tmax), 2) + ' t'],
+    ['Tonase minimum mesin HDD', nf(tf(pl.rigNameplate), 1) + ' t'], ['Rig yang disarankan', `≥ ${pl.rigRecT} t`], R.steel ? ['Pull load desain (× SF)', nf(tf(pl.rigReq), 1) + ' t'] : ['Safe Pull Strength PE', nf(tf(R.pe.SPS), 2) + ' t']
+  ];
+  const bw = CW / 3, bh = 13;
+  ensure(bh * 3 + 2);
+  kp.forEach(([a, b], i) => {
+    const cx = ML + (i % 3) * bw, cy = y + Math.floor(i / 3) * bh;
+    D.rect(cx, cy, bw, bh, { stroke: LINE, lw: .25, fill: i === 6 ? [246, 228, 210] : [247, 249, 250] });
+    D.text(a.toUpperCase(), cx + 3, cy + 4.6, { size: 6.4, bold: true, color: MUT });
+    D.text(b, cx + 3, cy + 10.4, { size: 11, bold: true, color: i === 6 ? ACC : INK });
+  });
+  y += bh * 3 + 5;
+  const notes = [...R.warn, ...R.info];
+  if (notes.length) { sub('Catatan'); notes.forEach(t => para(t, { size: 8, bullet: true, indent: 4, after: .6 })); y += 1; }
+  const room = BOT - y - 8;
+  image(prof, room >= 45 ? Math.min(82, room) : 82);
+  para(`Gambar: profil lintasan (skala vertikal ×${nf(A.VE, A.VE < 10 ? 1 : 0)}), kondisi setelah pullback.`, { size: 7.2, color: MUT });
+
+  /* --- body --- */
+  newPage();
+  heading('1  Data input');
+  table(inputTable(), { size: 7.6, mutedNotes: true });
+
+  heading('2  Tonase minimum mesin HDD');
+  para(`Beban rig dicek pada fase pilot (dorong ${nf(tf(R.ph.pilotMax), 2)} t), reaming (tarik ${nf(tf(R.ph.reamMax), 2)} t), dan pullback (tarik ${nf(tf(pl.Tmax), 2)} t). Fase penentu: ${R.ph.gov.name}. Kapasitas minimum = ${nf(tf(R.ph.gov.T), 2)} × ${nf(I.rigSF, 2)} ÷ ${nf(I.rigDerate * 100, 0)}% = ${nf(tf(pl.rigNameplate), 1)} t. Disarankan rig dengan kapasitas brosur ≥ ${pl.rigRecT} t (kelas ${pl.rigClass}).`);
+  table(domTable($('tblRig')), { size: 7.8 });
+  [...$('rigNotes').querySelectorAll('li')].forEach(li => para(cellText(li), { size: 8, bullet: true, indent: 4, after: .6, color: MUT }));
+
+  heading('3  Pemeriksaan desain');
+  para('UC = nilai/batas; UC > 1,00 berarti tidak memenuhi.', { size: 8, color: MUT });
+  table(domTable($('tblChecks')), { size: 7.4, cap: 70 });
+
+  heading('4  Pull load selama pullback');
+  para($('pullNote').textContent, { size: 8.4 });
+  image(imPull, 78);
+  para('Legenda: ' + [...$('keyPull').children].map(s => s.textContent).join(' · '), { size: 7.2, color: MUT });
+  table(domTable($('tblPull')), { size: 7.6 });
+
+  heading('5  Profil lintasan & properti pipa');
+  sub('Profil lintasan');
+  table(domTable($('tblGeo')), { size: 7.8 });
+  sub('Properti pipa');
+  table(domTable($('tblPipe')), { size: 7.8 });
+
+  heading('6  ' + $('hStress').textContent);
+  para($('stressNote').textContent, { size: 8.4 });
+  image(imStress, 78);
+  para('Legenda: ' + [...$('keyStress').children].map(s => s.textContent).join(' · '), { size: 7.2, color: MUT });
+
+  heading('7  ' + $('hDetail').textContent);
+  table(domTable($('tblDetail')), { size: 7.8 });
+  heading('8  ' + $('hNb').textContent);
+  table(domTable($('tblNb')), { size: 7.8 });
+
+  heading('9  Hydrofracture (frac-out)');
+  para($('fracNote').textContent, { size: 8.4 });
+  image(imFrac, 78);
+  para('Legenda: ' + [...$('keyFrac').children].map(s => s.textContent).join(' · '), { size: 7.2, color: MUT });
+
+  heading('10  Pendukung konstruksi');
+  table(domTable($('tblCon')), { size: 7.8 });
+
+  heading('11  Standar & referensi');
+  [...$('std').children].forEach(d => {
+    const b = d.querySelector('b').textContent, s = d.querySelector('span').textContent;
+    ensure(10); para(b, { size: 8.6, bold: true, after: .2 }); para(s, { size: 8, color: MUT, after: 1.6 });
+  });
+
+  heading('12  Asumsi & batasan');
+  [...$('assume').querySelectorAll('li')].forEach(li => para(li.textContent, { size: 8.2, bullet: true, indent: 4, after: .8 }));
+  para('Dokumen ini adalah alat bantu desain awal (screening/FEED). Hasil akhir perlu diverifikasi engineer yang berwenang dengan data geoteknik, survei, serta data rig dan lumpur aktual dari kontraktor.', { size: 8, color: MUT });
+
+  /* --- header & footer --- */
+  const n = D.pages.length;
+  const title = `Perhitungan HDD – ${PJ.name || I.name}`;
+  D.pages.forEach((pg, i) => {
+    D.p = pg;
+    if (i > 0) {
+      const t = wrap(title, 120, 7.4)[0];
+      D.text(t, ML, 12, { size: 7.4, color: MUT });
+      D.text([PJ.docNo, 'Rev. ' + PJ.rev].filter(Boolean).join(' · '), ML + CW, 12, { size: 7.4, color: MUT, align: 'right' });
+      D.line(ML, 14, ML + CW, 14, { color: LINE, lw: .3 });
+    }
+    D.line(ML, 287, ML + CW, 287, { color: LINE, lw: .3 });
+    D.text(`${I.name} · ${PJ.date || ''}`, ML, 291, { size: 7, color: MUT });
+    D.text(`Halaman ${i + 1} dari ${n}`, ML + CW, 291, { size: 7, color: MUT, align: 'right' });
+  });
+  const bytes = D.output({ title, author: PJ.prep, subject: `HDD ${I.name}` });
+  const fname = (`Perhitungan HDD - ${PJ.name || I.name}` + (PJ.docNo ? ` - ${PJ.docNo}` : '') + ` - Rev ${PJ.rev}`).replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, ' ').slice(0, 150) + '.pdf';
+  return { bytes, fname };
+}
+
+$('btnPdf').addEventListener('click', async () => {
+  const b = $('btnPdf'), msg = $('pdfMsg');
+  if (!RES) return;
+  b.disabled = true; b.textContent = 'Menyiapkan PDF…'; msg.textContent = '';
+  try {
+    const { bytes, fname } = await buildPdf();
+    if (DL) {
+      const r = await DL.save({ filename: fname, data: new Blob([bytes], { type: 'application/pdf' }) });
+      msg.textContent = r && r.status === 'delivered' ? 'PDF terkirim.' : 'PDF tersimpan.';
+    } else {
+      const r = await browserDownload(bytes, fname);
+      msg.textContent = r === 'shared' ? 'PDF dibagikan.' : r === 'cancel' ? 'Dibatalkan.' : 'PDF diunduh oleh browser.';
+    }
+  } catch (e) {
+    const c = e && e.code;
+    msg.textContent = c === 'declined' ? 'Unduhan dibatalkan.' : c === 'rate_limited' ? 'Masih ada konfirmasi unduhan yang terbuka. Coba lagi sebentar.' : c === 'unavailable' || c === 'not_granted' ? 'Unduhan tidak tersedia di tampilan ini.' : 'PDF gagal dibuat. Coba lagi.';
+    if (!c) console.error(e);
+  }
+  b.disabled = false; b.textContent = 'Unduh PDF';
+});
+
+
+/* =================== SCENARIOS (save / open / delete / export / import) =================== */
+var SC = { kind: 'memory', items: [], col: null, active: '', mem: {} };
+const LSKEY = 'hdd-scenarios-v1';
+const scId = () => 'sc-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
+
+function formState() {
+  const st = {};
+  document.querySelectorAll('#frm input, #frm select').forEach(el => {
+    if (el.type === 'radio') { if (el.checked) st['radio:' + el.name] = el.value; }
+    else if (el.type === 'file') { /* skip */ }
+    else if (el.id && !el.closest('#fsScen')) st[el.id] = el.value;
+  });
+  return st;
+}
+function applyState(st) {
+  Object.keys(st).filter(k => k.startsWith('radio:')).forEach(k => {
+    const r = document.querySelector(`input[name="${k.slice(6)}"][value="${st[k]}"]`); if (r) r.checked = true;
+  });
+  if (st['radio:cross']) curCross = st['radio:cross'];
+  if (st.nps && H.STEEL[st.nps]) { npsSel.value = st.nps; fillSch(); }
+  Object.entries(st).forEach(([id, v]) => {
+    if (id.startsWith('radio:') || id === 'nps') return;
+    const el = $(id); if (!el || el.closest('#fsScen')) return;
+    if (el.tagName === 'SELECT') { if ([...el.options].some(o => o.value === v)) el.value = v; }
+    else el.value = v;
+    if (el.tagName === 'SELECT' && el.dataset.prev !== undefined) el.dataset.prev = el.value;
+  });
+  $('kOut').textContent = nf(+$('kHamb').value, 1) + '×';
+  crossUI(); matUI(); projUI(); soilUI();
+  recalc(false);
+}
+function scSummary() {
+  const R = RES; if (!R) return {};
+  return {
+    cross: R.geo.river ? 'Sungai' : 'Jalan', crossName: R.I.name,
+    pipe: R.steel ? `Baja NPS ${R.P.nps} ${R.P.schLabel} ${R.P.grade.split(' ')[0]}` : `PE ${R.P.matKey} OD ${Math.round(R.P.D * 1000)} SDR ${R.P.SDR}`,
+    L: Math.round(R.geo.L), T: Math.round(tf(R.pull.Tmax) * 10) / 10, rig: Math.round(tf(R.pull.rigNameplate) * 10) / 10,
+    fails: R.checks.filter(c => !c.ok).length
+  };
+}
+
+/* --- storage backends --- */
+const localRead = () => { try { return JSON.parse(localStorage.getItem(LSKEY) || '{}') || {}; } catch (e) { return null; } };
+const localWrite = obj => { try { localStorage.setItem(LSKEY, JSON.stringify(obj)); return true; } catch (e) { return false; } };
+async function scInit() {
+  try {
+    if (window.claude && window.claude.use) {
+      const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+      const uid = user ? await user.id() : null;
+      if (db && uid) {
+        SC.col = db.doc('data/users/' + uid + '/hdd').collection('scenarios');
+        SC.kind = 'cloud';
+        SC.col.orderBy('savedAt', 'desc').onSnapshot(snap => {
+          SC.items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          scRender();
+        }, () => { SC.kind = localRead() ? 'local' : 'memory'; scLoadLocal(); });
+        scRender();
+        return;
+      }
+    }
+  } catch (e) { /* fall through */ }
+  SC.kind = localRead() ? 'local' : 'memory';
+  scLoadLocal();
+}
+function scLoadLocal() {
+  const src = SC.kind === 'local' ? (localRead() || {}) : SC.mem;
+  SC.items = Object.entries(src).map(([id, v]) => ({ id, ...v })).sort((a, b) => (b.savedAt || '').localeCompare(a.savedAt || ''));
+  scRender();
+}
+async function scPut(id, rec) {
+  if (SC.kind === 'cloud') {
+    try { await SC.col.doc(id).set(rec); return true; }
+    catch (e) {
+      if (e && e.code === 'quota_exceeded') { scMsg('Penyimpanan penuh. Hapus beberapa skenario lama lalu coba lagi.'); return false; }
+      SC.kind = localRead() ? 'local' : 'memory';
+    }
+  }
+  if (SC.kind === 'local') { const o = localRead() || {}; o[id] = rec; if (localWrite(o)) { scLoadLocal(); return true; } SC.kind = 'memory'; }
+  SC.mem[id] = rec; scLoadLocal(); return true;
+}
+async function scDel(id) {
+  if (SC.kind === 'cloud') { try { await SC.col.doc(id).delete(); return; } catch (e) { scMsg('Gagal menghapus. Coba lagi.'); return; } }
+  if (SC.kind === 'local') { const o = localRead() || {}; delete o[id]; localWrite(o); }
+  else delete SC.mem[id];
+  scLoadLocal();
+}
+
+/* --- UI --- */
+function scMsg(t) { $('scMsg').textContent = t; clearTimeout(scMsg.t); scMsg.t = setTimeout(() => { $('scMsg').textContent = ''; }, 4000); }
+function scRender() {
+  $('scWhere').textContent = SC.kind === 'cloud' ? 'Tersimpan di akun Claude Anda; bisa dibuka lagi dari perangkat lain.'
+    : SC.kind === 'local' ? 'Tersimpan di browser ini. Pakai Ekspor untuk memindahkan ke perangkat lain.'
+    : 'Penyimpanan permanen tidak tersedia di tampilan ini; skenario hilang saat halaman ditutup. Pakai Ekspor.';
+  const ul = $('scList');
+  $('scCount').textContent = SC.items.length ? `(${SC.items.length})` : '';
+  if (!SC.items.length) { ul.innerHTML = '<li class="sc-empty">Belum ada skenario. Atur input, beri nama, lalu klik Simpan.</li>'; return; }
+  ul.innerHTML = SC.items.map(it => {
+    const s = it.summary || {}, d = it.savedAt ? new Date(it.savedAt) : null;
+    const when = d ? d.toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+    const meta = [s.pipe, s.L ? `L ${s.L} m` : '', s.T != null ? `${nf(s.T, 1)} t` : '', when].filter(Boolean).join(' · ');
+    return `<li class="sc-item${it.name === SC.active ? ' on' : ''}" data-id="${esc(it.id)}" title="${esc([s.crossName, s.pipe, s.L ? 'L ' + s.L + ' m' : '', s.rig ? 'rig ≥ ' + s.rig + ' t' : ''].filter(Boolean).join(' · '))}">
+      <i class="dot ${s.fails ? 'bad' : 'ok'}" aria-label="${s.fails ? s.fails + ' tidak OK' : 'OK'}"></i>
+      <div class="sc-main"><b>${esc(it.name || 'Tanpa nama')}</b><span>${esc(meta)}</span></div>
+      <button type="button" data-act="open">Buka</button><button type="button" data-act="del" class="sc-del" aria-label="Hapus ${esc(it.name || '')}">✕</button></li>`;
+  }).join('');
+}
+$('scList').addEventListener('click', async e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const li = b.closest('.sc-item'), it = SC.items.find(x => x.id === li.dataset.id); if (!it) return;
+  if (b.dataset.act === 'open') {
+    applyState(it.data || {}); SC.active = it.name; $('scName').value = it.name; projUI(); scRender(); scMsg(`Skenario "${it.name}" dibuka.`);
+  } else if (b.dataset.act === 'del') {
+    if (b.dataset.confirm !== '1') { b.dataset.confirm = '1'; b.textContent = 'Hapus?'; b.classList.add('danger'); setTimeout(() => { if (b.isConnected) { b.dataset.confirm = ''; b.textContent = '✕'; b.classList.remove('danger'); } }, 3500); return; }
+    await scDel(it.id); if (SC.active === it.name) { SC.active = ''; projUI(); } scMsg(`Skenario "${it.name}" dihapus.`);
+  }
+});
+$('btnScSave').addEventListener('click', async () => {
+  const name = $('scName').value.trim();
+  if (!name) { scMsg('Isi nama skenario dulu, mis. "Skenario A".'); $('scName').focus(); return; }
+  const ex = SC.items.find(x => (x.name || '').toLowerCase() === name.toLowerCase());
+  const rec = { name, savedAt: new Date().toISOString(), data: formState(), summary: scSummary(), v: 1 };
+  const btn = $('btnScSave'); btn.disabled = true;
+  const ok = await scPut(ex ? ex.id : scId(), rec);
+  btn.disabled = false;
+  if (ok) { SC.active = name; projUI(); scRender(); scMsg(ex ? `Skenario "${name}" diperbarui.` : `Skenario "${name}" disimpan.`); }
+});
+$('scName').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('btnScSave').click(); } });
+$('btnScNew').addEventListener('click', () => { SC.active = ''; $('scName').value = ''; $('scName').focus(); projUI(); scRender(); scMsg('Ubah input, beri nama baru, lalu Simpan.'); });
+$('btnScExport').addEventListener('click', async () => {
+  if (!SC.items.length) { scMsg('Belum ada skenario untuk diekspor.'); return; }
+  const json = JSON.stringify({ app: 'Simulator HDD Crossing', v: 1, exportedAt: new Date().toISOString(), scenarios: SC.items.map(({ id, ...r }) => r) }, null, 1);
+  const fname = 'Skenario HDD ' + new Date().toISOString().slice(0, 10) + '.json';
+  try {
+    if (DL) await DL.save({ filename: fname, data: json });
+    else {
+      await saveFile(json, fname, 'application/json');
+    }
+    scMsg(`${SC.items.length} skenario diekspor.`);
+  } catch (e) { scMsg(e && e.code === 'declined' ? 'Ekspor dibatalkan.' : 'Ekspor gagal.'); }
+});
+$('btnScImport').addEventListener('click', () => $('scFile').click());
+$('scFile').addEventListener('change', async e => {
+  const f = e.target.files && e.target.files[0]; e.target.value = '';
+  if (!f) return;
+  try {
+    const o = JSON.parse(await f.text());
+    const list = Array.isArray(o.scenarios) ? o.scenarios : [];
+    let n = 0;
+    for (const r of list) {
+      if (!r || typeof r.name !== 'string' || typeof r.data !== 'object') continue;
+      const ex = SC.items.find(x => x.name === r.name);
+      const rec = { name: String(r.name).slice(0, 120), savedAt: r.savedAt || new Date().toISOString(), data: r.data, summary: r.summary || {}, v: 1 };
+      if (await scPut(ex ? ex.id : scId(), rec)) n++;
+    }
+    scMsg(n ? `${n} skenario diimpor.` : 'File tidak berisi skenario yang valid.');
+  } catch (err) { scMsg('File tidak bisa dibaca. Pilih file .json hasil Ekspor.'); }
+});
+scInit();
+
+
+/* ---------- controls ---------- */
+const btnPlay = $('btnPlay');
+function setPlaying(v) { A.playing = v; btnPlay.textContent = v ? 'Jeda' : 'Putar'; btnPlay.setAttribute('aria-pressed', String(v)); }
+btnPlay.addEventListener('click', () => setPlaying(!A.playing));
+$('btnRestart').addEventListener('click', () => { A.t = 0; setPlaying(true); });
+document.querySelectorAll('[data-phase]').forEach(b => b.addEventListener('click', () => {
+  const i = +b.dataset.phase; A.t = PH.slice(0, i).reduce((a, x) => a + x.d, 0) + .001; setPlaying(true);
+}));
+$('speed').addEventListener('change', e => A.speed = +e.target.value);
+$('veMode').addEventListener('change', () => { if (RES) layout(); });
+document.querySelectorAll('[data-k]').forEach(b => b.addEventListener('click', () => { $('kHamb').value = b.dataset.k; onInput(true); }));
+
+/* ---------- recalc ---------- */
+let tmr = null;
+function recalc(jumpToPull) {
+  try {
+    RES = H.calc(read());
+  } catch (e) { console.error(e); return; }
+  render(RES); layout();
+  if (jumpToPull) { A.t = PH[0].d + PH[1].d + .001; }
+}
+function onInput(jump) {
+  $('kOut').textContent = nf(+$('kHamb').value, 1) + '×';
+  crossUI(); matUI(); projUI();
+  clearTimeout(tmr); tmr = setTimeout(() => recalc(jump === true), 90);
+}
+$('frm').addEventListener('input', e => onInput(e.target.id === 'kHamb'));
+$('frm').addEventListener('change', e => {
+  if (e.target.id === 'nps') fillSch();
+  if (e.target.id === 'peMat') $('peSy').value = H.PE_MAT[$('peMat').value].sy;
+  if (e.target.name === 'mat') { $('rigCap').value = e.target.value === 'pe' ? 20 : 20; }
+  onInput(false);
+});
+new ResizeObserver(() => { if (RES) layout(); }).observe(cv);
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readColors);
+new MutationObserver(readColors).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+(() => { const d = new Date(), z = n => String(n).padStart(2, '0'); $('docDate').value = `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`; })();
+readColors(); crossUI(); matUI(); projUI(); recalc(false);
+if (reduce) { A.t = PH[0].d + PH[1].d + PH[2].d + .5; setPlaying(false); }
+requestAnimationFrame(frame);
+window.HDDUI = { A, get RES() { return RES; }, recalc, buildPdf };
+})();
+
+</script>
+
+<script>
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
+</body></html>
